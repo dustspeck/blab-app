@@ -1,5 +1,5 @@
-import React, {Component, useEffect} from 'react';
-import {Linking} from 'react-native';
+import React, {Component, useEffect, useState, useCallback} from 'react';
+import {Linking, AppRegistry} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 
@@ -12,7 +12,7 @@ const Stack = createStackNavigator();
 const App: () => React$Node = ({navigation}) => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="LoginScreen">
+      <Stack.Navigator initialRouteName="HomeScreen">
         <Stack.Screen
           name="HomeScreen"
           component={HomeScreen}
@@ -23,7 +23,6 @@ const App: () => React$Node = ({navigation}) => {
           component={ShareScreen}
           options={{
             title: 'Share',
-            // headerShown: false
           }}
         />
         <Stack.Screen
@@ -37,3 +36,4 @@ const App: () => React$Node = ({navigation}) => {
 };
 
 export default App;
+AppRegistry.registerComponent('App', () => App);

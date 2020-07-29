@@ -1,22 +1,19 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, Button, TextInput, Linking} from 'react-native';
+import {View, Text, Button, TextInput, Linking, Alert} from 'react-native';
+import ShareMenu from 'react-native-share-menu';
 
-const HomeScreen = ({navigation}) => {
+const HomeScreen = ({navigation, shared_data}) => {
   const [post_url, setpost_url] = useState('');
 
-  const validateURL = (url) => {
-    if (url) {
-      if (!url.startsWith('https://')) {
-        url = 'https://'.concat(_url);
+  useEffect(() => {
+    ShareMenu.getSharedText((post_url) => {
+      if (post_url && validateURL(post_url))
+        navigation.navigate('ShareScreen', {post_url});
+      else {
+        dsiplayError();
       }
-      try {
-        let validate_url = new URL(url);
-        return url;
-      } catch (_) {
-        return false;
-      }
-    }
-  };
+    });
+  }, []);
 
   useEffect(() => {
     const post_url = Linking.getInitialURL().then((post_url) => {
@@ -28,6 +25,30 @@ const HomeScreen = ({navigation}) => {
 
     return () => {};
   });
+
+  const validateURL = (url) => {
+    if (url) {
+      if (!url.startsWith('https://')) {
+        url = 'https://'.concat(url);
+      }
+      if (!url.startsWith('https://www.instagram.com/p/')) return false;
+      try {
+        let validate_url = new URL(url);
+        return url;
+      } catch (_) {
+        return false;
+      }
+    }
+  };
+
+  const dsiplayError = () => {
+    Alert.alert(
+      'Error Occured',
+      'Invalid URL',
+      [{text: 'OK', onPress: () => navigation.navigate('HomeScreen')}],
+      {cancelable: false},
+    );
+  };
 
   return (
     <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
@@ -41,7 +62,11 @@ const HomeScreen = ({navigation}) => {
       <Button
         title="Share"
         onPress={() => {
-          if (post_url) navigation.navigate('ShareScreen', {post_url});
+          if (post_url && validateURL(post_url))
+            navigation.navigate('ShareScreen', {post_url});
+          else {
+            dsiplayError();
+          }
         }}
       />
     </View>

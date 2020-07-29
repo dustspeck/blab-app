@@ -79,7 +79,7 @@ const ShareScreen = ({route, navigation}) => {
   const validateURL = (url) => {
     if (url) {
       if (!url.startsWith('https://')) {
-        url = 'https://'.concat(_url);
+        url = 'https://'.concat(url);
       }
       try {
         let validate_url = new URL(url);

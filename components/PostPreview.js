@@ -64,6 +64,18 @@ export class PostPreview extends Component {
     }
   };
 
+  formatVnC = (v, c) => {
+    v = parseInt(v);
+    c = parseInt(c);
+    if (v == 1 && c == 1) {
+      return `1 view • 1 comment`;
+    } else {
+      if (v == 1) return `1 view • ${this.formatNum(c)} comments`;
+      else if (v == 1) return `${this.formatNum(v)} views • 1 comment`;
+      else return `${this.formatNum(v)} views • ${this.formatNum(c)} comments`;
+    }
+  };
+
   render() {
     if (this.props.loading) {
       return (
@@ -89,7 +101,6 @@ export class PostPreview extends Component {
               </Text>
 
               {this.props.post_data.is_private && (
-                // <Text style={styles.private_tag}>Private</Text>
                 <Image
                   style={{
                     height: 20,
@@ -126,10 +137,15 @@ export class PostPreview extends Component {
                   marginLeft: 10,
                   fontSize: 14,
                 }}>
-                {this.formatLnC(
-                  this.props.post_data.likes_count,
-                  this.props.post_data.comments_count,
-                )}
+                {this.props.post_data.video_view_count
+                  ? this.formatVnC(
+                      this.props.post_data.video_view_count,
+                      this.props.post_data.comments_count,
+                    )
+                  : this.formatLnC(
+                      this.props.post_data.likes_count,
+                      this.props.post_data.comments_count,
+                    )}
               </Text>
 
               <Text

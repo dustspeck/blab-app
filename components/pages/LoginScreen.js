@@ -1,8 +1,15 @@
-import React, {Fragment} from 'react';
+import React, {Fragment, useEffect} from 'react';
 import {View, Text, StyleSheet, Clipboard, Button} from 'react-native';
 import WebView from 'react-native-webview';
+import ShareMenu from 'react-native-share-menu';
 
 const LoginScreen = ({route, navigation}) => {
+  useEffect(() => {
+    ShareMenu.getSharedText((text) => {
+      console.log(text);
+    });
+  });
+
   return (
     <Fragment>
       <View style={{flex: 1}}>
