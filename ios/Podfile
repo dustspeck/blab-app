@@ -10,6 +10,8 @@ target 'blab' do
 
   pod 'react-native-view-shot', :path => '../node_modules/react-native-view-shot'
 
+  pod 'react-native-video', :path => '../node_modules/react-native-video'
+
   target 'blabTests' do
     inherit! :complete
     # Pods for testing

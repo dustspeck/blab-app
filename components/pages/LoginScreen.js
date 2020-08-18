@@ -29,7 +29,7 @@ const LoginScreen = ({route, navigation}) => {
             title="Done"
             style={{position: 'absolute', bottom: 0, margin: 20}}
             onPress={() => {
-              navigation.navigate('HomeScreen');
+              navigation.navigate('HomeScreen', {load: true});
             }}
           />
         </View>

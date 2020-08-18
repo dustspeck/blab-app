@@ -27,7 +27,8 @@
           <category android:name="android.intent.category.DEFAULT" />
           <category android:name="android.intent.category.BROWSABLE" />
           <!-- Accepts URIs that begin with "https://www.instagram.com” -->
-          <data android:scheme="https" android:host="www.instagram.com" />
+          <data android:scheme="https" android:host="www.instagram.com/p/" />
+          <data android:scheme="https" android:host="instagram.com/p/" />
         </intent-filter>
         <intent-filter>
           <action android:name="android.intent.action.SEND" />
@@ -38,7 +39,6 @@
         </intent-filter>
       </activity>
       <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
-
     </application>
 
 </manifest>

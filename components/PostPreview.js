@@ -101,17 +101,7 @@ export class PostPreview extends Component {
               </Text>
 
               {this.props.post_data.is_private && (
-                <Image
-                  style={{
-                    height: 20,
-                    width: 20,
-                    margin: 12,
-                    position: 'absolute',
-                    right: 0,
-                    opacity: 0.8,
-                  }}
-                  source={lock_logo}
-                />
+                <Image style={styles.privateLock} source={lock_logo} />
               )}
 
               <Image
@@ -216,6 +206,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     top: 8,
     fontWeight: 'bold',
+  },
+  privateLock: {
+    height: 20,
+    width: 20,
+    margin: 12,
+    position: 'absolute',
+    right: 0,
+    opacity: 0.8,
   },
 });
 

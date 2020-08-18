@@ -1,36 +1,98 @@
-import React, {useState, useEffect} from 'react';
-import {View, Text, Button, TextInput, Linking, Alert} from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
+import {View, Text, ActivityIndicator} from 'react-native';
+import {Linking, Alert, StyleSheet} from 'react-native';
+import WebView from 'react-native-webview';
 import ShareMenu from 'react-native-share-menu';
 
-const HomeScreen = ({navigation, shared_data}) => {
-  const [post_url, setpost_url] = useState('');
+import {Scripts} from '../scripts';
+import UserDetails from '../UserDetails';
+import GuestDetails from '../GuestDetails';
+import UrlInput from '../UrlInput';
+import BlabbedList from '../BlabbedList';
+
+const HomeScreen = ({navigation, shared_data, route}) => {
+  const LoginWebView = useRef();
+
+  const [loading, setLoading] = useState(true);
+  const [load, setLoad] = useState();
+  const [user_details, setUserDetails] = useState({
+    username: null,
+    pp_url: null,
+    follwers_count: null,
+    following_count: null,
+    user_id: null,
+    is_private: null,
+    is_verified: null,
+  });
+  const [blabbed_history, setBlabbedHistory] = useState([
+    {id: 0, uri: require('../../public/assets/img/post.jpg')},
+    {id: 1, uri: require('../../public/assets/img/post.jpg')},
+    {id: 2, uri: require('../../public/assets/img/post.jpg')},
+    {id: 3, uri: require('../../public/assets/img/post.jpg')},
+    {id: 4, uri: require('../../public/assets/img/post.jpg')},
+    {id: 5, uri: require('../../public/assets/img/post.jpg')},
+    {id: 6, uri: require('../../public/assets/img/post.jpg')},
+    {id: 7, uri: require('../../public/assets/img/post.jpg')},
+  ]);
 
   useEffect(() => {
-    ShareMenu.getSharedText((post_url) => {
-      if (post_url && validateURL(post_url))
-        navigation.navigate('ShareScreen', {post_url});
-      else {
-        dsiplayError();
-      }
+    ShareMenu.getSharedText((text) => {
+      console.log('ShareMenu rec:' + text);
+      var post_url = extractURL(text);
+      var valid_url = validateURL(post_url);
+      console.log('validated:' + valid_url);
+      if (valid_url !== false) navigation.navigate('ShareScreen', {valid_url});
+      else dsiplayError();
     });
   }, []);
 
   useEffect(() => {
     const post_url = Linking.getInitialURL().then((post_url) => {
-      post_url = validateURL(post_url);
-      if (post_url) {
-        navigation.navigate('ShareScreen', {post_url});
+      var valid_url = validateURL(post_url);
+      if (valid_url !== false) {
+        navigation.navigate('ShareScreen', {valid_url});
       }
     });
-
     return () => {};
+  }, []);
+
+  useEffect(() => {
+    console.log('RELOADED');
+    LoginWebView.current.reload();
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (route.params.load) {
+        setLoad(true);
+      } else {
+        setLoad(false);
+      }
+    } catch (_) {}
   });
+
+  useEffect(() => {
+    try {
+      if (route.params.load) {
+        const {load} = route.params;
+        if (load) reloadWebview();
+      }
+    } catch (_) {}
+  }, [load]);
+
+  const extractURL = (text) => {
+    let link = text.substr(text.indexOf('https://www.instagram.com/p/'));
+    link = link.substr(
+      0,
+      link.indexOf(' ') > -1 ? link.indexOf(' ') : link.length,
+    );
+    return link;
+  };
 
   const validateURL = (url) => {
     if (url) {
-      if (!url.startsWith('https://')) {
-        url = 'https://'.concat(url);
-      }
+      console.log('validateURL rec:' + url);
+      if (!url.startsWith('https://')) url = 'https://'.concat(url);
       if (!url.startsWith('https://www.instagram.com/p/')) return false;
       try {
         let validate_url = new URL(url);
@@ -38,38 +100,80 @@ const HomeScreen = ({navigation, shared_data}) => {
       } catch (_) {
         return false;
       }
-    }
+    } else return false;
   };
 
   const dsiplayError = () => {
     Alert.alert(
       'Error Occured',
       'Invalid URL',
-      [{text: 'OK', onPress: () => navigation.navigate('HomeScreen')}],
+      [{text: 'OK', onPress: () => {}}],
       {cancelable: false},
     );
   };
 
-  return (
-    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-      <Text>Home Screen</Text>
-      <TextInput
-        style={{height: 40, borderColor: 'gray', borderWidth: 1}}
-        onChangeText={(post_url) => setpost_url(post_url)}
-        value={post_url}
-      />
+  const handleSetData = (newData) => {
+    setBlabbedHistory(newData);
+  };
 
-      <Button
-        title="Share"
-        onPress={() => {
-          if (post_url && validateURL(post_url))
-            navigation.navigate('ShareScreen', {post_url});
-          else {
-            dsiplayError();
-          }
-        }}
-      />
-    </View>
+  const handleUserData = (data) => {
+    data = JSON.parse(data);
+    if (data.success == true) {
+      setUserDetails({...data.user_data});
+    }
+    setLoading(false);
+  };
+
+  reloadWebview = () => {
+    console.log('RELOADED');
+    LoginWebView.current.reload();
+  };
+
+  return (
+    <>
+      <View style={{flex: 0}}>
+        <WebView
+          ref={LoginWebView}
+          source={{uri: 'https://www.instagram.com/nametag/'}}
+          injectedJavaScript={Scripts.fetchUserDetails}
+          onMessage={(event) => {
+            handleUserData(event.nativeEvent.data);
+          }}
+        />
+      </View>
+
+      {loading ? (
+        //data is loading
+        <View style={{backgroundColor: '#151515', paddingVertical: 124}}>
+          <ActivityIndicator style={{margin: 10}} size="large" color="#fff" />
+        </View>
+      ) : user_details.username === null ? (
+        //not logged in
+        <View style={{backgroundColor: '#151515'}}>
+          <GuestDetails
+            blab_count={blabbed_history.length}
+            navigation={navigation}
+          />
+        </View>
+      ) : (
+        //logged in
+        <View style={{backgroundColor: '#151515'}}>
+          <UserDetails
+            blab_count={blabbed_history.length}
+            ig_details={{...user_details}}
+          />
+        </View>
+      )}
+
+      <View style={{flex: 1, backgroundColor: '#151515'}}>
+        <UrlInput navigation={navigation} />
+        <BlabbedList
+          data={blabbed_history}
+          setData={handleSetData}
+          navigation={navigation}
+        />
+      </View>
+    </>
   );
 };
 

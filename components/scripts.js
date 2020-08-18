@@ -27,123 +27,29 @@ exports.Scripts = {
       };
     }
     window.onload = main;
-`,
+  `,
   fetchBase64: `  
-    // window.ReactNativeWebView.postMessage("base64");
-    // window.ReactNativeWebView.postMessage(c.toDataURL());
     setTimeout(() => {
-      // base64 = c.toDataURL("image/png")
-      // window.ReactNativeWebView.postMessage("base64");
       window.ReactNativeWebView.postMessage(c.toDataURL());
     }, 2000);
     
   `,
-};
-exports.rCanvas = (postURL, username) => {
-  return `<html>
-    <body style="margin: 0em; padding: 0em; margin: 0em;">
-      <canvas
-        id="PostPreviewCanvas"
-        width="512"
-        height="512"
-        style="margin: 0em; padding: 0em; margin: 2em;"
-        >Your browser does not support the HTML canvas tag.</canvas
-      >
-  
-      <script>
-        const postURL = "${postURL}";
-        const usrnm = "dust.speck";
-  
-        var c = document.getElementById("PostPreviewCanvas");
-        var ctx = c.getContext("2d");
-  
-        var thumbnail = new Image();
-        thumbnail.src = postURL;
-        thumbnail.crossOrigin = "Anonymous";
-        thumbnail.setAttribute('crossOrigin', 'anonymous');
-  
-        W = window.innerWidth;
-        H = window.innerHeight;
-          
-        c.width = W;
-        c.height = H;
-  
-        [iW, iH, aW, aH, aX, aY] = [0];
-        [bX1, bY1, bX2, bY2] = [0];
-        [tX, tY] = [0];
-  
-        calcImgDim = () => {
-          iW = thumbnail.width;
-          iH = thumbnail.height;
-          if (iW > iH) {
-            aW = W;
-            aH = (W / iW) * iH;
-          } else if (iH > iW) {
-            aH = H;
-            aW = (H / iH) * iW;
-          } else {
-            if (W > H) {
-              aH = H;
-              aW = (H / iH) * iW;
-            } else {
-              aW = W;
-              aH = (W / iW) * iH;
-            }
-          }
-          aW*=0.9;
-          aH*=0.9;
+  fetchUserDetails: `
+    function main() {
+      var data = {user_data:{username:null, pp_url:null, follwers_count:null, following_count:null, user_id:null, is_private:null, is_verified:null}, success:false}
 
-          aX = (W - aW) / 2;
-          aY = ((H - aH) / 2)+100;
-        };
-        drawBgDim = () => {
-          bX1 = aX;
-          bY1 = aY - 150;
-          bX2 = aW;
-          bY2 = aY;
-          ctx.beginPath();
-          ctx.rect(bX1, bY1, bX2, bY2);
-          ctx.fillStyle = "black";
-          ctx.fill();
-        };
-
-        writeUsrn = () => {
-          ctx.fillStyle = "white";
-          ctx.textAlign='start';
-          ctx.textBaseline='middle';
-          ctx.font = "50px Roboto";
-          tX = ((bX2 - bX1)/4);
-          tY = (bY1 + bY2)/2;
-          console.log(bX1, tY);
-          ctx.fillText("${username}", tX, tY);
-        };
-
-        writeB64 = () => {
-          ctx.fillStyle = "black";
-          ctx.textAlign = "start";
-          ctx.textBaseline = "middle";
-          ctx.font = "40px Roboto";
-          tX = -500;
-          tY = H / 2;
-          let a = 'data:'
-          try{
-            a+= c.toDataURL();
-          }catch(e){
-            a+=e;
-          }
-          ctx.fillText(a, tX, tY);
-        };
-  
-        thumbnail.onload = function () {
-          calcImgDim();
-          drawBgDim();
-          ctx.drawImage(thumbnail, aX, aY, aW, aH);
-          writeUsrn();
-          writeB64();
-          window.ReactNativeWebView.postMessage(c.toDataURL());
-        };
-      </script>
-    </body>
-  </html>
-  `;
+      if(window.top === window){
+        try{
+          // data.user_data.username = _sharedData.entry_data.ProfilePage[0].graphql.user.username
+          data.user_data.username = _sharedData.config.viewer.username
+          data.user_data.pp_url = _sharedData.config.viewer.profile_pic_url
+          data.success = true;
+        }catch(_){
+          data.success = false;
+        }
+        window.ReactNativeWebView.postMessage(JSON.stringify(data));
+      };
+    }
+    window.onload = main;
+  `,
 };

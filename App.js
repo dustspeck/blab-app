@@ -6,6 +6,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import ShareScreen from './components/pages/ShareScreen';
 import HomeScreen from './components/pages/HomeScreen';
 import LoginScreen from './components/pages/LoginScreen';
+import ViewScreen from './components/pages/ViewScreen';
 
 const Stack = createStackNavigator();
 
@@ -16,7 +17,12 @@ const App: () => React$Node = ({navigation}) => {
         <Stack.Screen
           name="HomeScreen"
           component={HomeScreen}
-          options={{title: 'IG Send', headerShown: false}}
+          options={{title: 'Blab for IG', headerShown: false}}
+        />
+        <Stack.Screen
+          name="ViewScreen"
+          component={ViewScreen}
+          options={{title: 'Blab for IG', headerShown: true}}
         />
         <Stack.Screen
           name="ShareScreen"

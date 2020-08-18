@@ -1,14 +1,14 @@
-import React, {Fragment, useState, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
-  View,
   StyleSheet,
   Clipboard,
-  Button,
   ToastAndroid,
-  Share,
   PermissionsAndroid,
+  Share,
   Alert,
+  Linking,
 } from 'react-native';
+import {View, Button, Text, TouchableOpacity} from 'react-native';
 import WebView from 'react-native-webview';
 import * as RNFS from 'react-native-fs';
 import ShareC from 'react-native-share';
@@ -17,7 +17,8 @@ import {Scripts} from '../scripts';
 import PostPreview from '../PostPreview';
 
 const ShareScreen = ({route, navigation}) => {
-  var {post_url} = route.params;
+  var {valid_url} = route.params;
+  var post_url = valid_url;
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({
     media_url: null,
@@ -32,10 +33,12 @@ const ShareScreen = ({route, navigation}) => {
     comments_count: null,
     sidecar: [],
   });
+  const [blab_url, setBlabUrl] = useState('testing');
 
   useEffect(() => {
     post_url = validateURL(post_url);
-    if (!post_url) dsiplayError();
+    console.log(post_url);
+    if (!post_url) displayError();
   });
 
   const onShare = async () => {
@@ -43,7 +46,7 @@ const ShareScreen = ({route, navigation}) => {
       console.log('========================onShare');
       await Share.share({
         title: 'Send Link',
-        message: shareURL,
+        message: blab_url,
       });
     } catch (error) {
       console.log(error);
@@ -77,6 +80,7 @@ const ShareScreen = ({route, navigation}) => {
   };
 
   const validateURL = (url) => {
+    console.log('SS: ' + url);
     if (url) {
       if (!url.startsWith('https://')) {
         url = 'https://'.concat(url);
@@ -90,13 +94,16 @@ const ShareScreen = ({route, navigation}) => {
     }
   };
 
-  const dsiplayError = () => {
+  const displayError = () => {
     Alert.alert(
       'Error Occured',
       'Either the URL is invalid or you are not logged in.',
       [
         {text: 'Login', onPress: () => navigation.navigate('LoginScreen')},
-        {text: 'OK', onPress: () => navigation.navigate('HomeScreen')},
+        {
+          text: 'OK',
+          onPress: () => navigation.navigate('HomeScreen'),
+        },
       ],
       {cancelable: false},
     );
@@ -110,25 +117,25 @@ const ShareScreen = ({route, navigation}) => {
 
       setData({...fdata.shared_data});
 
-      //send post data to server
+      // send post data to server
       const requestOptions = {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({...fdata.shared_data}),
       };
-      fetch('http://10.0.2.2:2000/api/v1/newpost', requestOptions)
+      fetch('https://blab-server.herokuapp.com/api/v1/newpost', requestOptions)
         .then((response) => response.json())
         .then((data) => console.log(data));
 
       setLoading(false);
     } else {
-      dsiplayError();
+      displayError();
     }
   };
 
   return (
-    <Fragment>
-      <View style={{flex: 0, height: 0}}>
+    <>
+      <View style={{flex: 0}}>
         <WebView
           source={{uri: post_url}}
           injectedJavaScript={Scripts.fetchData}
@@ -141,47 +148,164 @@ const ShareScreen = ({route, navigation}) => {
       <View style={Styles.centerAlignTop}>
         <PostPreview loading={loading} post_data={data} />
       </View>
+
+      {/* Generate Link, Copy Link, Share Link*/}
+      {/* Share Image, Download Media */}
+      {/* Open Post, Remove watermark */}
+
+      {/* <Button
+        disabled={loading}
+        title="Copy Link"
+        style={{margin: 20}}
+        onPress={() => {
+          Clipboard.setString(data.media_url);
+          ToastAndroid.show('Copied', ToastAndroid.SHORT);
+        }}
+      /> 
+      <Button
+        disabled={loading}
+        title="Send Link"
+        onPress={() => {onShare}}
+      />
+      <Button disabled={loading} title="Share Image" onPress={onShareImg} /> */}
       <View
         style={{
-          alignItems: 'center',
-          justifyContent: 'center',
-          flex: 0.3,
-          backgroundColor: '#101010',
+          flex: 1,
+          flexDirection: 'column',
+          justifyContent: 'space-around',
+          backgroundColor: '#303030',
         }}>
-        <Button
-          disabled={loading}
-          title="Copy Link"
-          onPress={() => {
-            Clipboard.setString(data.media_url);
-            ToastAndroid.show('Copied', ToastAndroid.SHORT);
-          }}
-        />
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            backgroundColor: '#303030',
+          }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'white',
+              borderRadius: 22,
+              padding: 10,
+              paddingHorizontal: 15,
+              margin: 20,
+              marginHorizontal: 10,
+              height: 45,
+              width: 200,
+            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                textAlignVertical: 'center',
+                textAlign: 'center',
+              }}
+              onPress={onShare}>
+              Share Public Link
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'white',
+              borderRadius: 22,
+              padding: 10,
+              paddingHorizontal: 15,
+              margin: 20,
+              marginHorizontal: 10,
+              height: 45,
+              width: 130,
+            }}
+            onPress={() => {
+              Clipboard.setString(blab_url);
+              ToastAndroid.show('Copied', ToastAndroid.SHORT);
+            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                textAlignVertical: 'center',
+                textAlign: 'center',
+              }}>
+              Copy Link
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            backgroundColor: '#303030',
+          }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'white',
+              borderRadius: 22,
+              padding: 10,
+              paddingHorizontal: 15,
+              margin: 20,
+              marginHorizontal: 10,
+              height: 45,
+              width: 200,
+            }}
+            onPress={onShareImg}>
+            <Text
+              style={{
+                fontSize: 18,
+                textAlignVertical: 'center',
+                textAlign: 'center',
+              }}>
+              Send As Image
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'white',
+              borderRadius: 22,
+              padding: 10,
+              paddingHorizontal: 15,
+              margin: 20,
+              marginHorizontal: 10,
+              height: 45,
+              width: 130,
+            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                textAlignVertical: 'center',
+                textAlign: 'center',
+              }}>
+              Save Media
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{
+            padding: 20,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            backgroundColor: '#303030',
+          }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'white',
+              borderRadius: 15,
+              padding: 5,
+              paddingHorizontal: 15,
+              height: 30,
+              margin: 20,
+              marginTop: 2,
+            }}
+            onPress={() => {
+              Linking.openURL(post_url);
+            }}>
+            <Text>Open on Instagram</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Ads */}
+        <View>
+          <Text style={{fontSize: 18, color: 'white'}}></Text>
+        </View>
       </View>
-      <View
-        style={{
-          alignItems: 'center',
-          justifyContent: 'center',
-          flex: 0.3,
-          backgroundColor: '#101010',
-        }}>
-        <Button
-          disabled={loading}
-          title="Send Link"
-          onPress={() => {
-            onShare();
-          }}
-        />
-      </View>
-      <View
-        style={{
-          alignItems: 'center',
-          justifyContent: 'center',
-          flex: 0.3,
-          backgroundColor: '#101010',
-        }}>
-        <Button disabled={loading} title="Share Image" onPress={onShareImg} />
-      </View>
-    </Fragment>
+    </>
   );
 };
 
