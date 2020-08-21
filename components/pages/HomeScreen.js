@@ -1,8 +1,9 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {View, Text, ActivityIndicator} from 'react-native';
-import {Linking, Alert, StyleSheet} from 'react-native';
+import {Linking, Alert, StyleSheet, Dimensions} from 'react-native';
 import WebView from 'react-native-webview';
 import ShareMenu from 'react-native-share-menu';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 import {Scripts} from '../scripts';
 import UserDetails from '../UserDetails';
@@ -11,6 +12,8 @@ import UrlInput from '../UrlInput';
 import BlabbedList from '../BlabbedList';
 
 const HomeScreen = ({navigation, shared_data, route}) => {
+  const {width, height} = Dimensions.get('window');
+
   const LoginWebView = useRef();
 
   const [loading, setLoading] = useState(true);
@@ -130,13 +133,14 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   };
 
   return (
-    <>
+    <View style={{flex: 1, minHeight: height}}>
       <View style={{flex: 0}}>
         <WebView
           ref={LoginWebView}
-          source={{uri: 'https://www.instagram.com/nametag/'}}
-          injectedJavaScript={Scripts.fetchUserDetails}
+          source={{uri: 'https://www.instagram.com/accounts/edit/?__a=1'}}
+          injectedJavaScript={Scripts.fetchUserDetails__a}
           onMessage={(event) => {
+            console.log(event.nativeEvent.data);
             handleUserData(event.nativeEvent.data);
           }}
         />
@@ -144,12 +148,12 @@ const HomeScreen = ({navigation, shared_data, route}) => {
 
       {loading ? (
         //data is loading
-        <View style={{backgroundColor: '#151515', paddingVertical: 124}}>
+        <View style={{backgroundColor: '#151515', flex: 0.6}}>
           <ActivityIndicator style={{margin: 10}} size="large" color="#fff" />
         </View>
       ) : user_details.username === null ? (
         //not logged in
-        <View style={{backgroundColor: '#151515'}}>
+        <View style={{backgroundColor: '#151515', flex: 0.6}}>
           <GuestDetails
             blab_count={blabbed_history.length}
             navigation={navigation}
@@ -157,7 +161,11 @@ const HomeScreen = ({navigation, shared_data, route}) => {
         </View>
       ) : (
         //logged in
-        <View style={{backgroundColor: '#151515'}}>
+        <View
+          style={{
+            backgroundColor: '#151515',
+            flex: 0.6,
+          }}>
           <UserDetails
             blab_count={blabbed_history.length}
             ig_details={{...user_details}}
@@ -165,7 +173,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
         </View>
       )}
 
-      <View style={{flex: 1, backgroundColor: '#151515'}}>
+      <View style={{backgroundColor: '#151515', flex: 1}}>
         <UrlInput navigation={navigation} />
         <BlabbedList
           data={blabbed_history}
@@ -173,7 +181,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
           navigation={navigation}
         />
       </View>
-    </>
+    </View>
   );
 };
 
