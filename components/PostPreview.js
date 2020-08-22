@@ -1,17 +1,29 @@
 import React, {Component} from 'react';
-import {Text, View, StyleSheet, Image, ActivityIndicator} from 'react-native';
+import {
+  Text,
+  View,
+  StyleSheet,
+  Image,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
 import ViewShot from 'react-native-view-shot';
 import * as RNFS from 'react-native-fs';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const lock_logo = require('../public/assets/img/lock.jpg');
+const lock_d_logo = require('../public/assets/img/lock_d.jpg');
 
 export class PostPreview extends Component {
   state = {
     img_uri: null,
     sizeF: 0.3,
+    dark: false,
+    toggle_load: false,
   };
 
   onImageLoad = () => {
+    this.setState({toggle_load: true});
     console.log('Data:' + JSON.stringify(this.props.post_data));
     //resize acc to layout
     let factor = this.props.post_data.height / this.props.post_data.width;
@@ -35,6 +47,7 @@ export class PostPreview extends Component {
           )
             .then((success) => {
               console.log('done move');
+              this.setState({toggle_load: false});
             })
             .catch((err) => console.log(err));
         });
@@ -86,14 +99,64 @@ export class PostPreview extends Component {
     } else {
       return (
         <>
+          <View
+            style={{
+              position: 'absolute',
+              bottom: '30%',
+              right: 0,
+              zIndex: 10,
+              height: 60,
+              width: 60,
+            }}>
+            <TouchableOpacity
+              disabled={this.state.toggle_load}
+              onPress={() => {
+                this.setState(this.state.dark ? {dark: false} : {dark: true});
+                this.onImageLoad();
+              }}
+              style={{
+                flex: 1,
+                backgroundColor: this.state.dark ? 'white' : '#242424',
+                borderTopLeftRadius: 30,
+                borderBottomLeftRadius: 30,
+                elevation: 20,
+              }}
+              activeOpacity={0.5}>
+              <Icon
+                name={
+                  this.state.toggle_load
+                    ? 'time-outline'
+                    : this.state.dark
+                    ? 'sunny-outline'
+                    : 'moon-outline'
+                }
+                style={{
+                  flex: 1,
+                  fontSize: 30,
+                  marginLeft: 'auto',
+                  marginRight: 'auto',
+                  textAlignVertical: 'center',
+                  color: this.state.dark ? '#242424' : 'white',
+                }}
+              />
+            </TouchableOpacity>
+          </View>
           <ViewShot ref="viewShot" style={styles.VSBorder}>
-            <View style={styles.card}>
+            <View
+              style={{
+                ...styles.card,
+                backgroundColor: this.state.dark ? '#242424' : 'white',
+              }}>
               <Image
                 style={styles.pp}
                 source={{uri: this.props.post_data.pp_url}}
               />
 
-              <Text style={styles.username}>
+              <Text
+                style={{
+                  ...styles.username,
+                  color: this.state.dark ? 'white' : 'black',
+                }}>
                 {this.props.post_data.username.toString().length > 16
                   ? this.props.post_data.username.toString().substring(0, 16) +
                     '...'
@@ -101,7 +164,10 @@ export class PostPreview extends Component {
               </Text>
 
               {this.props.post_data.is_private && (
-                <Image style={styles.privateLock} source={lock_logo} />
+                <Image
+                  style={styles.privateLock}
+                  source={this.state.dark ? lock_d_logo : lock_logo}
+                />
               )}
 
               <Image
@@ -126,6 +192,7 @@ export class PostPreview extends Component {
                   margin: 5,
                   marginLeft: 10,
                   fontSize: 14,
+                  color: this.state.dark ? 'white' : 'black',
                 }}>
                 {this.props.post_data.video_view_count
                   ? this.formatVnC(
@@ -162,29 +229,13 @@ const styles = StyleSheet.create({
     elevation: 3,
     backgroundColor: '#fff',
     overflow: 'hidden',
+    elevation: 10,
   },
   VSBorder: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     resizeMode: 'contain',
-  },
-  private_tag: {
-    margin: 5,
-    marginHorizontal: 10,
-    textAlign: 'right',
-    fontWeight: 'bold',
-    fontSize: 15,
-    backgroundColor: 'black',
-    borderRadius: 4,
-    paddingRight: 5,
-    paddingLeft: 5,
-    color: 'white',
-    alignSelf: 'flex-end',
-    justifyContent: 'center',
-    position: 'absolute',
-    right: 2,
-    top: 8,
   },
   center: {
     flex: 1,

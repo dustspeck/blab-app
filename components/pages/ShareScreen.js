@@ -8,6 +8,7 @@ import {
   Alert,
   Linking,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import {View, Button, Text, TouchableOpacity} from 'react-native';
 import WebView from 'react-native-webview';
 import * as RNFS from 'react-native-fs';
@@ -134,17 +135,17 @@ const ShareScreen = ({route, navigation}) => {
 
       // //send post data to server
 
-      const requestOptions = {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({...fdata.shared_data}),
-      };
-      fetch('https://blab-server.herokuapp.com/api/v1/newpost', requestOptions)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
-          setBlabUrl(data.data);
-        });
+      // const requestOptions = {
+      //   method: 'POST',
+      //   headers: {'Content-Type': 'application/json'},
+      //   body: JSON.stringify({...fdata.shared_data}),
+      // };
+      // fetch('https://blab-server.herokuapp.com/api/v1/newpost', requestOptions)
+      //   .then((response) => response.json())
+      //   .then((data) => {
+      //     console.log(data);
+      //     setBlabUrl(data.data);
+      //   });
 
       setLoading(false);
     } else {
@@ -171,8 +172,7 @@ const ShareScreen = ({route, navigation}) => {
         <View
           style={{
             flex: 1,
-            // backgroundColor: 'white'
-            backgroundColor: '#212121',
+            backgroundColor: '#444',
           }}>
           {/* PostPreview */}
           {/* //TODO: Fit the Post size in this window // */}
@@ -215,7 +215,9 @@ const ShareScreen = ({route, navigation}) => {
                     activeOpacity={0.9}
                     style={Styles.touchButton}
                     onPress={onShare}>
-                    <Text style={Styles.buttonText}>Share Public Link</Text>
+                    <Text style={Styles.buttonText}>
+                      <Icon name="link-outline" /> Share Public Link
+                    </Text>
                   </TouchableOpacity>
                 </View>
                 <View
@@ -232,7 +234,10 @@ const ShareScreen = ({route, navigation}) => {
                       Clipboard.setString(blab_url);
                       ToastAndroid.show('Copied', ToastAndroid.SHORT);
                     }}>
-                    <Text style={Styles.buttonText}>Copy Link</Text>
+                    <Text style={Styles.buttonText}>
+                      {' '}
+                      <Icon name="copy-outline" /> Copy Link
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -260,7 +265,9 @@ const ShareScreen = ({route, navigation}) => {
                     activeOpacity={0.9}
                     style={Styles.touchButton}
                     onPress={onShareImg}>
-                    <Text style={Styles.buttonText}>Send As Image</Text>
+                    <Text style={Styles.buttonText}>
+                      <Icon name="image-outline" /> Send As Image
+                    </Text>
                   </TouchableOpacity>
                 </View>
                 <View
@@ -273,7 +280,9 @@ const ShareScreen = ({route, navigation}) => {
                   <TouchableOpacity
                     activeOpacity={0.9}
                     style={Styles.touchButton}>
-                    <Text style={Styles.buttonText}>Save Media</Text>
+                    <Text style={Styles.buttonText}>
+                      <Icon name="download-outline" /> Save Media
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -304,7 +313,7 @@ const ShareScreen = ({route, navigation}) => {
                       Linking.openURL(post_url);
                     }}>
                     <Text style={{...Styles.buttonText, fontSize: 15}}>
-                      Open on Instagram
+                      <Icon name="open-outline" /> Open on Instagram
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -320,7 +329,7 @@ const ShareScreen = ({route, navigation}) => {
                     style={Styles.touchSecondaryButton}
                     onPress={() => {}}>
                     <Text style={{...Styles.buttonText, fontSize: 15}}>
-                      Remove Watermark
+                      <Icon name="remove-circle-outline" /> Remove Watermark
                     </Text>
                   </TouchableOpacity>
                 </View>
