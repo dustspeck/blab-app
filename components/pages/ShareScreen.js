@@ -1,27 +1,27 @@
 import React, {useState, useEffect} from 'react';
 import {
-  StyleSheet,
-  Clipboard,
+  View,
   ToastAndroid,
   PermissionsAndroid,
   Share,
   Alert,
   Linking,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
-import {View, Button, Text, TouchableOpacity} from 'react-native';
 import WebView from 'react-native-webview';
 import * as RNFS from 'react-native-fs';
 import ShareC from 'react-native-share';
+import RNFetchBlob from 'rn-fetch-blob';
 
 import {Scripts} from '../scripts';
 import PostPreview from '../PostPreview';
+import ShareTray from '../ShareTray';
 
 const ShareScreen = ({route, navigation}) => {
+  const abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
+
   var {valid_url} = route.params;
   var post_url = valid_url;
 
-  const [loading, setLoading] = useState(true);
   const [data, setData] = useState({
     media_url: null,
     img_url: null,
@@ -37,11 +37,102 @@ const ShareScreen = ({route, navigation}) => {
   });
   const [blab_url, setBlabUrl] = useState('https://blabforig.com/');
 
+  const [loading, setLoading] = useState(true);
+
+  const [is_share_loading, setIsShareLoading] = useState(false);
+  const [is_shared, setIsShared] = useState(false);
+
+  const [save_progress, setSaveProgress] = useState(-1);
+  const [is_saved, setIsSaved] = useState(false);
+  const [saved_location, setSavedLocation] = useState();
+  const [saved_mime, setSavedMime] = useState();
+
+  const [share_modal_open, setShareModalOpen] = useState(true);
+
   useEffect(() => {
     post_url = validateURL(post_url);
     console.log(post_url);
     if (!post_url) displayError();
+  }, []);
+
+  const handlePressSUB = () => {
+    setIsShareLoading(true);
+    if (!loading) generateLink(data);
+  };
+
+  const generateLink = (data) => {
+    //send post data to server
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data),
+    };
+    fetch('https://blab-server.herokuapp.com/api/v1/newpost', requestOptions)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('Generate Link: ' + data);
+        setBlabUrl(data.data);
+        setIsShared(true);
+        setIsShareLoading(false);
+      });
+  };
+
+  const downloadMedia = () => {
+    setSaveProgress(0);
+    setIsSaved(false);
+
+    let ext = data.media_url.indexOf('.jpg') > -1 ? '.jpg' : '.mp4';
+    RNFetchBlob.config({
+      path: abs_ext_path + 'filename' + ext,
+      fileCache: true,
+    })
+      .fetch('GET', data.media_url, {
+        //headers
+      })
+      .progress((received, total) => {
+        console.log('progress', received / total);
+        setSaveProgress(received / total);
+      })
+      .then((res) => {
+        setSaveProgress(1);
+        setIsSaved(true);
+        setSavedLocation('file://' + abs_ext_path + 'filename' + ext);
+        setSavedMime(ext === '.mp4' ? 'video/mp4' : 'image/jpg');
+        ToastAndroid.showWithGravity(
+          'Media saved.',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+        );
+      });
+  };
+
+  const dummyDownload = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve('done');
+    }, 10000);
   });
+
+  const downloadInitiate = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: 'Storage Permission',
+          message: 'App needs access to memory to download the file ',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        downloadMedia();
+      } else {
+        Alert.alert(
+          'Permission Denied!',
+          'You need to give storage permission to download the file',
+        );
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  };
 
   const onShare = async () => {
     try {
@@ -66,31 +157,117 @@ const ShareScreen = ({route, navigation}) => {
         },
       );
 
-      RNFS.readFile(RNFS.ExternalDirectoryPath + '/image.png', 'base64').then(
-        (image) => {
-          ShareC.open({
-            url: 'data:image/jpeg;base64,' + image,
-            type: 'image/jpeg',
-          }).catch((err) => {
-            console.log(err);
-          });
-        },
-      );
+      await ShareC.open({
+        url: 'file://' + abs_ext_path + 'filename.png',
+        type: 'image/jpeg',
+      }).catch((err) => {
+        console.log(err);
+      });
+
+      // RNFS.readFile(RNFS.ExternalDirectoryPath + '/image.png', 'base64').then(
+      //   (image) => {
+      //     ShareC.open({
+      //       url: 'file://' + RNFS.ExternalDirectoryPath + '/image.png',
+      //       // url: 'data:image/jpeg;base64,' + image,
+      //       type: 'image/jpeg',
+      //     }).catch((err) => {
+      //       console.log(err);
+      //     });
+      //   },
+      // );
     } catch (error) {
       console.log(error);
     }
   };
 
+  const onStory = async () => {
+    console.log('========================onStory');
+    try {
+      let is_video = data.video_view_count ? true : false;
+      console.log('is_video: ', is_video);
+
+      if (is_video && !is_saved) {
+        await downloadInitiate();
+      } else {
+        let options = is_video
+          ? {
+              // method: ShareC.InstagramStories.SHARE_BACKGROUND_VIDEO,
+              // backgroundVideo: saved_location,
+              // social: ShareC.Social.INSTAGRAM_STORIES,
+              social: ShareC.Social.INSTAGRAM,
+              url: saved_location,
+              forceDialog: true,
+            }
+          : {
+              method: ShareC.InstagramStories.SHARE_STICKER_IMAGE,
+              stickerImage:
+                'file://' + abs_ext_path + '.cache/' + 'filename.png',
+              backgroundBottomColor: '#fefefe',
+              backgroundTopColor: '#000',
+              social: ShareC.Social.INSTAGRAM_STORIES,
+            };
+
+        await ShareC.shareSingle(options);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onRepost = async () => {
+    console.log('========================onRepost');
+    try {
+      let is_video = data.video_view_count ? true : false;
+      console.log('is_video: ', is_video);
+
+      if (!is_saved) {
+        // if (is_video && !is_saved) {
+        await downloadInitiate();
+      } else {
+        // let is_video = data.video_view_count ? true : false;
+        let options = is_video
+          ? {
+              social: ShareC.Social.INSTAGRAM,
+              url: saved_location,
+              forceDialog: true,
+            }
+          : {
+              url: 'file://' + abs_ext_path + 'filename.jpg',
+              social: ShareC.Social.INSTAGRAM,
+              forceDialog: true,
+            };
+        await ShareC.shareSingle(options);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onOpen = async () => {
+    try {
+      console.log('========================onOpen');
+      console.log(saved_location);
+      await ShareC.open({
+        url: saved_location,
+        type: saved_mime,
+        // excludedActivityTypes: ['com.instagram', 'com.instagram.android', 'com.whatsapp', 'com.whatsapp.android', 'com.blab']
+      }).catch((err) => console.log(err));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onSave = () => {
+    downloadInitiate();
+  };
+
   const validateURL = (url) => {
-    console.log('SS: ' + url);
-    // console.log(urlToJSON(url));
     if (url) {
       if (!url.startsWith('https://')) {
         url = 'https://'.concat(url);
       }
       try {
         let validate_url = new URL(url);
-        console.log('validated');
         return url;
       } catch (err) {
         console.log(err);
@@ -125,28 +302,12 @@ const ShareScreen = ({route, navigation}) => {
   };
 
   const handleFetch = (fdata) => {
-    console.log(fdata);
+    console.log('Handle Fetch:' + fdata);
     fdata = JSON.parse(fdata);
 
     if (fdata.success) {
       console.log('========================setData');
-
       setData({...fdata.shared_data});
-
-      // //send post data to server
-
-      // const requestOptions = {
-      //   method: 'POST',
-      //   headers: {'Content-Type': 'application/json'},
-      //   body: JSON.stringify({...fdata.shared_data}),
-      // };
-      // fetch('https://blab-server.herokuapp.com/api/v1/newpost', requestOptions)
-      //   .then((response) => response.json())
-      //   .then((data) => {
-      //     console.log(data);
-      //     setBlabUrl(data.data);
-      //   });
-
       setLoading(false);
     } else {
       displayError();
@@ -164,223 +325,48 @@ const ShareScreen = ({route, navigation}) => {
           }}
         />
       </View>
-      <View
-        style={{
-          flex: 5,
-          // backgroundColor: 'red'
-        }}>
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: '#444',
-          }}>
-          {/* PostPreview */}
-          {/* //TODO: Fit the Post size in this window // */}
+
+      <View style={{flex: 5}}>
+        <View style={{flex: 1, backgroundColor: '#444'}}>
           <PostPreview loading={loading} post_data={data} />
         </View>
       </View>
+
       <View style={{flex: 2, backgroundColor: 'black'}}>
-        <View
-          style={{
-            flex: 1,
-            // backgroundColor: 'green',
-            margin: 10,
-          }}>
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'column',
-              justifyContent: 'space-around',
-            }}>
-            <View
-              style={{
-                flex: 1,
-                // backgroundColor: 'red',
-                margin: 5,
-              }}>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                }}>
-                <View
-                  style={{
-                    flex: 2,
-                    // backgroundColor: 'purple',
-                    margin: 3,
-                  }}>
-                  {/* Send Public Link */}
-                  <TouchableOpacity
-                    activeOpacity={0.9}
-                    style={Styles.touchButton}
-                    onPress={onShare}>
-                    <Text style={Styles.buttonText}>
-                      <Icon name="link-outline" /> Share Public Link
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View
-                  style={{
-                    flex: 1,
-                    // backgroundColor: 'black',
-                    margin: 3,
-                  }}>
-                  {/* Copy Link */}
-                  <TouchableOpacity
-                    activeOpacity={0.9}
-                    style={Styles.touchSecondaryButton}
-                    onPress={() => {
-                      Clipboard.setString(blab_url);
-                      ToastAndroid.show('Copied', ToastAndroid.SHORT);
-                    }}>
-                    <Text style={Styles.buttonText}>
-                      {' '}
-                      <Icon name="copy-outline" /> Copy Link
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-            <View
-              style={{
-                flex: 1,
-                // backgroundColor: 'blue',
-                margin: 5,
-              }}>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                }}>
-                <View
-                  style={{
-                    flex: 1,
-                    // backgroundColor: 'purple',
-                    margin: 3,
-                  }}>
-                  {/* Send As Image */}
-                  <TouchableOpacity
-                    activeOpacity={0.9}
-                    style={Styles.touchButton}
-                    onPress={onShareImg}>
-                    <Text style={Styles.buttonText}>
-                      <Icon name="image-outline" /> Send As Image
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View
-                  style={{
-                    flex: 1,
-                    // backgroundColor: 'black',
-                    margin: 3,
-                  }}>
-                  {/* Download Media */}
-                  <TouchableOpacity
-                    activeOpacity={0.9}
-                    style={Styles.touchButton}>
-                    <Text style={Styles.buttonText}>
-                      <Icon name="download-outline" /> Save Media
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-            <View
-              style={{
-                flex: 0.75,
-                // backgroundColor: 'yellow',
-                margin: 5,
-              }}>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                }}>
-                <View
-                  style={{
-                    flex: 1,
-                    // backgroundColor: 'red',
-                    margin: 3,
-                  }}>
-                  {/* Open in Instagram */}
-                  <TouchableOpacity
-                    activeOpacity={0.9}
-                    style={Styles.touchSecondaryButton}
-                    onPress={() => {
-                      Linking.openURL(post_url);
-                    }}>
-                    <Text style={{...Styles.buttonText, fontSize: 15}}>
-                      <Icon name="open-outline" /> Open on Instagram
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View
-                  style={{
-                    flex: 1,
-                    // backgroundColor: 'red',
-                    margin: 3,
-                  }}>
-                  {/* Open in Instagram */}
-                  <TouchableOpacity
-                    activeOpacity={0.9}
-                    style={Styles.touchSecondaryButton}
-                    onPress={() => {}}>
-                    <Text style={{...Styles.buttonText, fontSize: 15}}>
-                      <Icon name="remove-circle-outline" /> Remove Watermark
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
+        <ShareTray
+          loading={loading}
+          data={data}
+          blab_url={blab_url}
+          is_share_loading={is_share_loading}
+          is_shared={is_shared}
+          save_progress={save_progress}
+          is_saved={is_saved}
+          handlePressSUB={handlePressSUB}
+          onShare={onShare}
+          onShareImg={onShareImg}
+          onOpen={onOpen}
+          onSave={onSave}
+          onStory={onStory}
+          onRepost={onRepost}
+        />
       </View>
     </>
   );
-
-  {
-    /* Generate Link, Copy Link, Share Link*/
-  }
-  {
-    /* Share Image, Download Media */
-  }
-  {
-    /* Open Post, Remove watermark */
-  }
 };
 
-const Styles = StyleSheet.create({
-  centerAlign: {
-    flex: 0.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#101010',
-  },
-  centerAlignTop: {
-    flex: 2,
-    backgroundColor: '#101010',
-  },
-  touchButton: {
-    flex: 1,
-    backgroundColor: 'white',
-    borderRadius: 15,
-    marginHorizontal: 5,
-  },
-  touchSecondaryButton: {
-    flex: 1,
-    backgroundColor: '#eeeeee',
-    borderRadius: 15,
-    marginHorizontal: 5,
-  },
-  buttonText: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginTop: 'auto',
-    marginBottom: 'auto',
-  },
-});
-
 export default ShareScreen;
+
+//Linking.openURL(post_url);
+
+// <Modal visible={share_modal_open} transparent={true}>
+//   <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.3)' }} onPress={() => { setShareModalOpen(!share_modal_open) }}>
+//     <View flex={5} flexDirection='column' justifyContent='flex-end'>
+//       <TouchableOpacity style={{ height: 50, width: 150, borderRadius: 10, backgroundColor: 'white', alignSelf: 'center' }}
+//         onPress={() => { Alert.alert(":|") }}></TouchableOpacity>
+//     </View><View flex={2}></View>
+//   </TouchableOpacity>
+// </Modal>
+
+/* Generate Link, Copy Link, Share Link*/
+/* Share Image, Download Media */
+/* Open Post, Remove watermark, Change BG color */

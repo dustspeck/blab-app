@@ -21,6 +21,7 @@ export class PostPreview extends Component {
     dark: false,
     toggle_load: false,
   };
+  abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
 
   onImageLoad = () => {
     this.setState({toggle_load: true});
@@ -43,7 +44,7 @@ export class PostPreview extends Component {
           //move from cache to ext stg
           RNFS.moveFile(
             this.state.img_uri,
-            RNFS.ExternalDirectoryPath + '/image.png',
+            this.abs_ext_path + '.cache/' + 'filename.png',
           )
             .then((success) => {
               console.log('done move');
@@ -90,6 +91,7 @@ export class PostPreview extends Component {
   };
 
   render() {
+    // console.log('Data:' + JSON.stringify(this.props.post_data));
     if (this.props.loading) {
       return (
         <View style={styles.center}>
@@ -141,7 +143,10 @@ export class PostPreview extends Component {
               />
             </TouchableOpacity>
           </View>
-          <ViewShot ref="viewShot" style={styles.VSBorder}>
+          <ViewShot
+            ref="viewShot"
+            style={styles.VSBorder}
+            options={{quality: 0.2}}>
             <View
               style={{
                 ...styles.card,
@@ -212,8 +217,9 @@ export class PostPreview extends Component {
                   marginHorizontal: 10,
                   textAlign: 'right',
                   fontSize: 12,
+                  color: this.state.dark ? 'white' : 'black',
                 }}>
-                {/* Blab for IG */}
+                Blab for IG
               </Text>
             </View>
           </ViewShot>

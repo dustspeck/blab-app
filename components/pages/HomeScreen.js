@@ -4,6 +4,7 @@ import {Linking, Alert, StyleSheet, Dimensions} from 'react-native';
 import WebView from 'react-native-webview';
 import ShareMenu from 'react-native-share-menu';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import AsyncStorage from '@react-native-community/async-storage';
 
 import {Scripts} from '../scripts';
 import UserDetails from '../UserDetails';
@@ -12,6 +13,26 @@ import UrlInput from '../UrlInput';
 import BlabbedList from '../BlabbedList';
 
 const HomeScreen = ({navigation, shared_data, route}) => {
+  //data
+  const connectData = async () => {
+    try {
+      let data = {id: 1, value: ['hihi']};
+      // await AsyncStorage.setItem('@storage_Key', JSON.stringify(data));
+      let v = await AsyncStorage.getItem('@storage_Key');
+      console.log(v);
+      v = JSON.parse(v);
+      v.value.push('hello');
+      await AsyncStorage.setItem('@storage_Key', JSON.stringify(v));
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    connectData();
+  }, []);
+  //
+
   const {width, height} = Dimensions.get('window');
 
   const LoginWebView = useRef();
