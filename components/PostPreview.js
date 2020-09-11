@@ -6,10 +6,13 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
+  ToastAndroid,
 } from 'react-native';
 import ViewShot from 'react-native-view-shot';
 import * as RNFS from 'react-native-fs';
+import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const lock_logo = require('../public/assets/img/lock.jpg');
 const lock_d_logo = require('../public/assets/img/lock_d.jpg');
@@ -20,10 +23,15 @@ export class PostPreview extends Component {
     sizeF: 0.3,
     dark: false,
     toggle_load: false,
+    is_cached: false,
   };
   abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
 
   onImageLoad = () => {
+    // this.cacheMedia();
+    if (!this.state.is_cached) {
+      this.cacheMedia();
+    }
     this.setState({toggle_load: true});
     console.log('Data:' + JSON.stringify(this.props.post_data));
     //resize acc to layout
@@ -53,6 +61,45 @@ export class PostPreview extends Component {
             .catch((err) => console.log(err));
         });
     }, 500);
+  };
+
+  cacheMedia = () => {
+    let ext =
+      this.props.post_data.img_url.indexOf('.jpg') > -1 ? '.jpg' : '.mp4';
+    RNFetchBlob.config({
+      path:
+        this.abs_ext_path +
+        `/.cache/${this.getPostIdentifier(this.props.post_data.post_url)}` +
+        ext,
+      fileCache: true,
+    })
+      .fetch('GET', this.props.post_data.img_url, {
+        //headers
+      })
+      .progress((received, total) => {
+        console.log('caching progress', received / total);
+      })
+      .then(async (res) => {
+        this.setState({is_cached: true});
+        //add data
+        let pre = await AsyncStorage.getItem('db_blabbed_history');
+        pre = JSON.parse(pre);
+        pre.data.push({
+          id: Math.floor(Math.random() * 1000000),
+          thumbnail:
+            this.abs_ext_path +
+            `.cache/${this.getPostIdentifier(this.props.post_data.post_url)}` +
+            ext,
+        });
+        await AsyncStorage.setItem('db_blabbed_history', JSON.stringify(pre));
+        //
+        ToastAndroid.showWithGravity(
+          'Cached',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+        );
+      })
+      .catch((err) => console.log(err));
   };
 
   formatNum = (num) => {
@@ -88,6 +135,14 @@ export class PostPreview extends Component {
       else if (v == 1) return `${this.formatNum(v)} views • 1 comment`;
       else return `${this.formatNum(v)} views • ${this.formatNum(c)} comments`;
     }
+  };
+
+  getPostIdentifier = (post_url) => {
+    console.log('post_url' + post_url);
+    var pid = post_url.substr(post_url.indexOf('/p/') + 3);
+    pid = pid.indexOf('/') > -1 ? pid.substr(0, pid.indexOf('/')) : pid;
+    console.log('PID:' + pid);
+    return pid;
   };
 
   render() {
@@ -146,7 +201,7 @@ export class PostPreview extends Component {
           <ViewShot
             ref="viewShot"
             style={styles.VSBorder}
-            options={{quality: 0.2}}>
+            options={{quality: 0.6}}>
             <View
               style={{
                 ...styles.card,

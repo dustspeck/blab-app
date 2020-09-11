@@ -8,9 +8,6 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 const GuestDetails = ({blab_count, navigation}) => {
   return (
     <>
-      {/* <Text style={{color: 'white', fontSize: 18, margin: 20}}>
-        Not logged in
-      </Text> */}
       <View
         style={{
           flex: 1,

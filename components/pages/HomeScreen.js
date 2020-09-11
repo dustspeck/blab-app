@@ -1,6 +1,13 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {View, Text, ActivityIndicator} from 'react-native';
-import {Linking, Alert, StyleSheet, Dimensions} from 'react-native';
+import {
+  Linking,
+  Alert,
+  StyleSheet,
+  Dimensions,
+  PermissionsAndroid,
+} from 'react-native';
+import * as RNFS from 'react-native-fs';
 import WebView from 'react-native-webview';
 import ShareMenu from 'react-native-share-menu';
 import Icon from 'react-native-vector-icons/FontAwesome5';
@@ -11,32 +18,28 @@ import UserDetails from '../UserDetails';
 import GuestDetails from '../GuestDetails';
 import UrlInput from '../UrlInput';
 import BlabbedList from '../BlabbedList';
+import AskPermissions from '../AskPermissions';
 
 const HomeScreen = ({navigation, shared_data, route}) => {
-  //data
-  const connectData = async () => {
-    try {
-      let data = {id: 1, value: ['hihi']};
-      // await AsyncStorage.setItem('@storage_Key', JSON.stringify(data));
-      let v = await AsyncStorage.getItem('@storage_Key');
-      console.log(v);
-      v = JSON.parse(v);
-      v.value.push('hello');
-      await AsyncStorage.setItem('@storage_Key', JSON.stringify(v));
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  useEffect(() => {
-    connectData();
-  }, []);
-  //
-
+  //constants
+  const abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
   const {width, height} = Dimensions.get('window');
 
+  //sample
+  const db_sample = {
+    data: [
+      {id: 1, thumbnail: abs_ext_path + 'filename.jpg'},
+      {id: 2, thumbnail: abs_ext_path + 'filename.jpg'},
+    ],
+  };
+  //
+
+  //refs
   const LoginWebView = useRef();
 
+  //states
+  const [has_permission, setHasPermission] = useState(false);
+  const [first_run, setFirstRun] = useState(false);
   const [loading, setLoading] = useState(true);
   const [load, setLoad] = useState();
   const [user_details, setUserDetails] = useState({
@@ -48,16 +51,125 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     is_private: null,
     is_verified: null,
   });
-  const [blabbed_history, setBlabbedHistory] = useState([
-    {id: 0, uri: require('../../public/assets/img/post.jpg')},
-    {id: 1, uri: require('../../public/assets/img/post.jpg')},
-    {id: 2, uri: require('../../public/assets/img/post.jpg')},
-    {id: 3, uri: require('../../public/assets/img/post.jpg')},
-    {id: 4, uri: require('../../public/assets/img/post.jpg')},
-    {id: 5, uri: require('../../public/assets/img/post.jpg')},
-    {id: 6, uri: require('../../public/assets/img/post.jpg')},
-    {id: 7, uri: require('../../public/assets/img/post.jpg')},
-  ]);
+  const [blabbed_history, setBlabbedHistory] = useState([]);
+  const [last_perm, setLastPerm] = useState(true);
+
+  //constants
+  const initializeConstants = async () => {
+    try {
+      //path
+      let exists = await RNFS.exists(abs_ext_path + '/.cache');
+      if (!exists) {
+        RNFS.mkdir(abs_ext_path + '/.cache');
+      }
+      //permission
+      let db_perm = await AsyncStorage.getItem('db_perm');
+      setLastPerm(db_perm);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  //db
+  const connectData = async () => {
+    try {
+      let data = await AsyncStorage.getItem('db_blabbed_history');
+      console.log('DB: ' + data);
+      if (data) {
+        //sample
+        // await AsyncStorage.setItem(
+        //   'db_blabbed_history',
+        //   JSON.stringify(db_sample),
+        // );
+        //
+        let history = await AsyncStorage.getItem('db_blabbed_history');
+        history = JSON.parse(history);
+        // console.log('BL Sent:' + history);
+        console.log('BL Sent:' + history.data);
+        // setBlabbedHistory(history);
+        setBlabbedHistory(history.data);
+      } else {
+        setFirstRun(true);
+        let empty_data = {data: []};
+        await AsyncStorage.setItem(
+          'db_blabbed_history',
+          JSON.stringify(empty_data),
+        );
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const onSuccess = (result) => {
+    console.log('Result:' + result);
+    console.log('hasP:' + has_permission);
+    AsyncStorage.setItem('db_perm', `${result}`);
+    setLastPerm(result);
+    setHasPermission(result);
+  };
+
+  //URL
+  const extractURL = (text) => {
+    let link = text.substr(text.indexOf('https://www.instagram.com/p/'));
+    link = link.substr(
+      0,
+      link.indexOf(' ') > -1 ? link.indexOf(' ') : link.length,
+    );
+    return link;
+  };
+
+  const validateURL = (url) => {
+    if (url) {
+      console.log('validateURL rec:' + url);
+      if (!url.startsWith('https://')) url = 'https://'.concat(url);
+      if (!url.startsWith('https://www.instagram.com/p/')) return false;
+      try {
+        let validate_url = new URL(url);
+        return url;
+      } catch (_) {
+        return false;
+      }
+    } else return false;
+  };
+
+  const displayError = () => {
+    Alert.alert(
+      'Error Occured',
+      'Invalid URL',
+      [{text: 'OK', onPress: () => {}}],
+      {cancelable: false},
+    );
+  };
+
+  //data
+  const handleSetData = (newData) => {
+    setBlabbedHistory(newData);
+  };
+
+  const handleUserData = (data) => {
+    data = JSON.parse(data);
+    if (data.success == true) {
+      setUserDetails({...data.user_data});
+    }
+    setLoading(false);
+  };
+
+  reloadWebview = () => {
+    console.log('RELOADED');
+    LoginWebView.current.reload();
+  };
+
+  //useeffects
+  useEffect(() => {
+    initializeConstants();
+    connectData();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', connectData);
+    return unsubscribe;
+  }, [navigation]);
 
   useEffect(() => {
     ShareMenu.getSharedText((text) => {
@@ -66,7 +178,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
       var valid_url = validateURL(post_url);
       console.log('validated:' + valid_url);
       if (valid_url !== false) navigation.navigate('ShareScreen', {valid_url});
-      else dsiplayError();
+      else displayError();
     });
   }, []);
 
@@ -104,55 +216,6 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     } catch (_) {}
   }, [load]);
 
-  const extractURL = (text) => {
-    let link = text.substr(text.indexOf('https://www.instagram.com/p/'));
-    link = link.substr(
-      0,
-      link.indexOf(' ') > -1 ? link.indexOf(' ') : link.length,
-    );
-    return link;
-  };
-
-  const validateURL = (url) => {
-    if (url) {
-      console.log('validateURL rec:' + url);
-      if (!url.startsWith('https://')) url = 'https://'.concat(url);
-      if (!url.startsWith('https://www.instagram.com/p/')) return false;
-      try {
-        let validate_url = new URL(url);
-        return url;
-      } catch (_) {
-        return false;
-      }
-    } else return false;
-  };
-
-  const dsiplayError = () => {
-    Alert.alert(
-      'Error Occured',
-      'Invalid URL',
-      [{text: 'OK', onPress: () => {}}],
-      {cancelable: false},
-    );
-  };
-
-  const handleSetData = (newData) => {
-    setBlabbedHistory(newData);
-  };
-
-  const handleUserData = (data) => {
-    data = JSON.parse(data);
-    if (data.success == true) {
-      setUserDetails({...data.user_data});
-    }
-    setLoading(false);
-  };
-
-  reloadWebview = () => {
-    console.log('RELOADED');
-    LoginWebView.current.reload();
-  };
-
   return (
     <View style={{flex: 1, minHeight: height}}>
       <View style={{flex: 0}}>
@@ -176,7 +239,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
         //not logged in
         <View style={{backgroundColor: '#151515', flex: 0.6}}>
           <GuestDetails
-            blab_count={blabbed_history.length}
+            blab_count={blabbed_history ? blabbed_history.length : 0}
             navigation={navigation}
           />
         </View>
@@ -188,7 +251,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
             flex: 0.6,
           }}>
           <UserDetails
-            blab_count={blabbed_history.length}
+            blab_count={blabbed_history ? blabbed_history.length : 0}
             ig_details={{...user_details}}
           />
         </View>
@@ -196,11 +259,15 @@ const HomeScreen = ({navigation, shared_data, route}) => {
 
       <View style={{backgroundColor: '#151515', flex: 1}}>
         <UrlInput navigation={navigation} />
-        <BlabbedList
-          data={blabbed_history}
-          setData={handleSetData}
-          navigation={navigation}
-        />
+        {has_permission || last_perm ? (
+          <BlabbedList
+            data={blabbed_history}
+            setData={handleSetData}
+            navigation={navigation}
+          />
+        ) : (
+          <AskPermissions onSuccess={onSuccess} />
+        )}
       </View>
     </View>
   );
