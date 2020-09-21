@@ -22,14 +22,14 @@ export class PostPreview extends Component {
     img_uri: null,
     sizeF: 0.3,
     dark: false,
+    brand: true,
     toggle_load: false,
     is_cached: false,
   };
   abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
 
   onImageLoad = () => {
-    // this.cacheMedia();
-    if (!this.state.is_cached) {
+    if (!this.state.is_cached && this.props.cache) {
       this.cacheMedia();
     }
     this.setState({toggle_load: true});
@@ -43,24 +43,28 @@ export class PostPreview extends Component {
     }
 
     //take viewshot after 500ms and save
-    setTimeout(() => {
-      this.refs.viewShot
-        .capture({result: 'data-uri', format: 'jpeg'})
-        .then((uri) => {
-          this.setState({img_uri: uri});
+    try {
+      setTimeout(() => {
+        this.refs.viewShot
+          .capture({result: 'data-uri', format: 'jpeg'})
+          .then((uri) => {
+            this.setState({img_uri: uri});
 
-          //move from cache to ext stg
-          RNFS.moveFile(
-            this.state.img_uri,
-            this.abs_ext_path + '.cache/' + 'filename.png',
-          )
-            .then((success) => {
-              console.log('done move');
-              this.setState({toggle_load: false});
-            })
-            .catch((err) => console.log(err));
-        });
-    }, 500);
+            //move from cache to ext stg
+            RNFS.moveFile(
+              this.state.img_uri,
+              this.abs_ext_path + '.cache/' + 'filename.png',
+            )
+              .then((success) => {
+                console.log('done move');
+                this.setState({toggle_load: false});
+              })
+              .catch((err) => console.log(err));
+          });
+      }, 500);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   cacheMedia = () => {
@@ -90,14 +94,15 @@ export class PostPreview extends Component {
             this.abs_ext_path +
             `.cache/${this.getPostIdentifier(this.props.post_data.post_url)}` +
             ext,
+          post_url: this.props.post_data.post_url,
         });
         await AsyncStorage.setItem('db_blabbed_history', JSON.stringify(pre));
         //
-        ToastAndroid.showWithGravity(
-          'Cached',
-          ToastAndroid.SHORT,
-          ToastAndroid.BOTTOM,
-        );
+        // ToastAndroid.showWithGravity(
+        //   'Cached',
+        //   ToastAndroid.SHORT,
+        //   ToastAndroid.BOTTOM,
+        // );
       })
       .catch((err) => console.log(err));
   };
@@ -162,8 +167,8 @@ export class PostPreview extends Component {
               bottom: '30%',
               right: 0,
               zIndex: 10,
-              height: 60,
-              width: 60,
+              height: 50,
+              width: 50,
             }}>
             <TouchableOpacity
               disabled={this.state.toggle_load}
@@ -173,7 +178,7 @@ export class PostPreview extends Component {
               }}
               style={{
                 flex: 1,
-                backgroundColor: this.state.dark ? 'white' : '#242424',
+                backgroundColor: this.state.dark ? '#ffffff' : '#242424',
                 borderTopLeftRadius: 30,
                 borderBottomLeftRadius: 30,
                 elevation: 20,
@@ -189,7 +194,47 @@ export class PostPreview extends Component {
                 }
                 style={{
                   flex: 1,
-                  fontSize: 30,
+                  fontSize: 25,
+                  marginLeft: 'auto',
+                  marginRight: 'auto',
+                  textAlignVertical: 'center',
+                  color: this.state.dark ? '#242424' : 'white',
+                }}
+              />
+            </TouchableOpacity>
+          </View>
+          <View
+            style={{
+              position: 'absolute',
+              bottom: '45%',
+              right: 0,
+              zIndex: 10,
+              height: 50,
+              width: 50,
+            }}>
+            <TouchableOpacity
+              disabled={this.state.toggle_load}
+              onPress={() => {
+                this.setState(
+                  this.state.brand ? {brand: false} : {brand: true},
+                );
+                this.onImageLoad();
+              }}
+              style={{
+                flex: 1,
+                backgroundColor: this.state.dark ? '#ffffff' : '#242424',
+                borderTopLeftRadius: 30,
+                borderBottomLeftRadius: 30,
+                elevation: 20,
+              }}
+              activeOpacity={0.5}>
+              <Icon
+                name={
+                  this.state.toggle_load ? 'time-outline' : 'pricetag-outline'
+                }
+                style={{
+                  flex: 1,
+                  fontSize: 25,
                   marginLeft: 'auto',
                   marginRight: 'auto',
                   textAlignVertical: 'center',
@@ -274,7 +319,7 @@ export class PostPreview extends Component {
                   fontSize: 12,
                   color: this.state.dark ? 'white' : 'black',
                 }}>
-                Blab for IG
+                {this.state.brand && 'Blab for IG'}
               </Text>
             </View>
           </ViewShot>

@@ -1,176 +1,384 @@
-import React, {useEffect, useState} from 'react';
-import {StyleSheet, Dimensions} from 'react-native';
-import {Text, View, Image, ScrollView} from 'react-native';
-import Video from 'react-native-video';
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  ToastAndroid,
+  PermissionsAndroid,
+  Share,
+  Alert,
+  Linking,
+} from 'react-native';
+import WebView from 'react-native-webview';
+import * as RNFS from 'react-native-fs';
+import ShareC from 'react-native-share';
+import RNFetchBlob from 'rn-fetch-blob';
+import Clipboard from '@react-native-community/clipboard';
 
-//   todo: add save button for blabbed list or fav
-//   todo: download media
-const ViewScreen = ({route}) => {
-  const {height, width} = Dimensions.get('window');
+import {Scripts} from '../scripts';
+import PostPreview from '../PostPreview';
+import ShareTray from '../ShareTray';
 
-  const [post_data, setpost_data] = useState({});
-  const [img_dim, setimg_dim] = useState({});
+const ShareScreen = ({route, navigation}) => {
+  const abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
+
+  var {post_url} = route.params;
+  console.log('PU:' + JSON.stringify(route.params));
+  //   var post_url = valid_url;
+
+  const [data, setData] = useState({
+    media_url: null,
+    img_url: null,
+    height: null,
+    width: null,
+    username: null,
+    pp_url: null,
+    is_private: null,
+    is_verified: null,
+    likes_count: null,
+    comments_count: null,
+    sidecar: [],
+  });
+  const [blab_url, setBlabUrl] = useState('https://blabforig.com/');
+
+  const [loading, setLoading] = useState(true);
+
+  const [is_share_loading, setIsShareLoading] = useState(false);
+  const [is_shared, setIsShared] = useState(false);
+
+  const [save_progress, setSaveProgress] = useState(-1);
+  const [is_saved, setIsSaved] = useState(false);
+  const [saved_location, setSavedLocation] = useState();
+  const [saved_mime, setSavedMime] = useState();
+
+  const [share_modal_open, setShareModalOpen] = useState(true);
 
   useEffect(() => {
-    fetch(`https://blabforig.com/api/v1/p/${route.params.blab_url}`)
-      .then((res) => res.text())
-      .then((res) => {
-        res = JSON.parse(res);
-        console.log(res);
-        setpost_data({...res.data});
-      });
+    post_url = validateURL(post_url);
+    console.log(post_url);
+    if (!post_url) displayError();
   }, []);
 
-  const formatNum = (num) => {
-    num = parseInt(num);
-    if (num < 999) return num;
-    // if (num < 9999) return `${parseInt(num / 1000)},${num % 1000}`;
-    if (num < 1000000) return Math.round(num / 1000) + 'K';
-    if (num < 10000000) return (num / 1000000).toFixed(2) + 'M';
-    if (num < 1000000000) return Math.round(num / 1000000) + 'M';
-    if (num < 1000000000000) return Math.round(num / 1000000000) + 'B';
-    return 'loading...';
+  const handlePressSUB = () => {
+    setIsShareLoading(true);
+    if (!loading) generateLink(data);
   };
 
-  const returnStats = () => {
-    if (post_data.video_view_count) {
-      return (
-        <>
-          <Text>{formatNum(post_data.video_view_count)}</Text>
-          <Text>
-            {' '}
-            {post_data.video_view_count > 1 ? ` views • ` : ` view • `}
-          </Text>
-          <Text>{formatNum(post_data.comments_count)}</Text>
-          <Text>
-            {post_data.comments_count > 1 ? ` comments ` : ` comment `}
-          </Text>
-        </>
+  const generateLink = (data) => {
+    //send post data to server
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data),
+    };
+    fetch('https://blab-server.herokuapp.com/api/v1/newpost', requestOptions)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('Generate Link: ' + data);
+        setBlabUrl(data.data);
+        setIsShared(true);
+        setIsShareLoading(false);
+      });
+  };
+
+  const downloadMedia = () => {
+    setSaveProgress(0);
+    setIsSaved(false);
+
+    let ext = data.media_url.indexOf('.jpg') > -1 ? '.jpg' : '.mp4';
+    RNFetchBlob.config({
+      path: abs_ext_path + 'filename' + ext,
+      fileCache: true,
+    })
+      .fetch('GET', data.media_url, {
+        //headers
+      })
+      .progress((received, total) => {
+        console.log('progress', received / total);
+        setSaveProgress(received / total);
+      })
+      .then((res) => {
+        setSaveProgress(1);
+        setIsSaved(true);
+        setSavedLocation('file://' + abs_ext_path + 'filename' + ext);
+        setSavedMime(ext === '.mp4' ? 'video/mp4' : 'image/jpg');
+        ToastAndroid.showWithGravity(
+          'Media saved.',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+        );
+      });
+  };
+
+  const dummyDownload = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve('done');
+    }, 10000);
+  });
+
+  const downloadInitiate = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: 'Storage Permission',
+          message: 'App needs access to memory to download the file ',
+        },
       );
-    } else {
-      return (
-        <>
-          <Text>{formatNum(post_data.likes_count)}</Text>
-          <Text> {post_data.likes_count > 1 ? ` likes • ` : ` like • `}</Text>
-          <Text>{formatNum(post_data.comments_count)}</Text>
-          <Text>
-            {post_data.comments_count > 1 ? ` comments ` : ` comment `}
-          </Text>
-        </>
-      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        downloadMedia();
+      } else {
+        Alert.alert(
+          'Permission Denied!',
+          'You need to give storage permission to download the file',
+        );
+      }
+    } catch (err) {
+      console.warn(err);
     }
   };
 
-  const returnMedia = (mediaUrl) => {
-    if (mediaUrl.indexOf('.mp4') > -1) {
-      return (
-        <Video
-          //   source={{uri: mediaUrl}}
-          source={{
-            uri:
-              'https://instagram.fdel25-1.fna.fbcdn.net/v/t50.2886-16/117293885_123581939441428_2907363007064062360_n.mp4?_nc_ht=instagram.fdel25-1.fna.fbcdn.net&_nc_cat=104&_nc_ohc=olw5ChV3wHgAX8_mhZ_&oe=5F305EC4&oh=e3a7ecff46d0a441925e0c2f3425ad76',
-          }}
-          resizeMode="contain"
-          style={{flex: 1, width: null, height: null}}
-          controls={true}
-        />
+  const onShare = async () => {
+    try {
+      console.log('========================onShare');
+      await Share.share({
+        title: 'Send Link',
+        message: blab_url,
+        excludedActivityTypes: ['com.blab'],
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onShareImg = async () => {
+    try {
+      console.log('========================onShareImg');
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: 'Blab',
+          message: 'Grant Write External Storage Permission',
+        },
       );
+
+      await ShareC.open({
+        url: 'file://' + abs_ext_path + '.cache/filename.png',
+        type: 'image/jpeg',
+      }).catch((err) => {
+        console.log(err);
+      });
+
+      // RNFS.readFile(RNFS.ExternalDirectoryPath + '/image.png', 'base64').then(
+      //   (image) => {
+      //     ShareC.open({
+      //       url: 'file://' + RNFS.ExternalDirectoryPath + '/image.png',
+      //       // url: 'data:image/jpeg;base64,' + image,
+      //       type: 'image/jpeg',
+      //     }).catch((err) => {
+      //       console.log(err);
+      //     });
+      //   },
+      // );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onStory = async () => {
+    console.log('========================onStory');
+    try {
+      let is_video = data.video_view_count ? true : false;
+      console.log('is_video: ', is_video);
+
+      if (is_video && !is_saved) {
+        await downloadInitiate();
+      } else {
+        let options = is_video
+          ? {
+              // method: ShareC.InstagramStories.SHARE_BACKGROUND_VIDEO,
+              // backgroundVideo: saved_location,
+              // social: ShareC.Social.INSTAGRAM_STORIES,
+              social: ShareC.Social.INSTAGRAM,
+              url: saved_location,
+              forceDialog: true,
+            }
+          : {
+              method: ShareC.InstagramStories.SHARE_STICKER_IMAGE,
+              stickerImage:
+                'file://' + abs_ext_path + '.cache/' + 'filename.png',
+              backgroundBottomColor: '#fefefe',
+              backgroundTopColor: '#000',
+              social: ShareC.Social.INSTAGRAM_STORIES,
+            };
+
+        await ShareC.shareSingle(options);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onRepost = async () => {
+    console.log('========================onRepost');
+    try {
+      //copy caption
+      console.log(data.caption);
+      Clipboard.setString(data.caption);
+      ToastAndroid.showWithGravity(
+        'Copied caption to clipboard',
+        ToastAndroid.SHORT,
+        ToastAndroid.BOTTOM,
+      );
+
+      let is_video = data.video_view_count ? true : false;
+      console.log('is_video: ', is_video);
+
+      if (!is_saved) {
+        // if (is_video && !is_saved) {
+        await downloadInitiate();
+      } else {
+        // let is_video = data.video_view_count ? true : false;
+        let options = is_video
+          ? {
+              social: ShareC.Social.INSTAGRAM,
+              url: saved_location,
+              forceDialog: true,
+            }
+          : {
+              url: 'file://' + abs_ext_path + 'filename.jpg',
+              social: ShareC.Social.INSTAGRAM,
+              forceDialog: true,
+            };
+        await ShareC.shareSingle(options);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onOpen = async () => {
+    try {
+      console.log('========================onOpen');
+      console.log(saved_location);
+      await ShareC.open({
+        url: saved_location,
+        type: saved_mime,
+        // excludedActivityTypes: ['com.instagram', 'com.instagram.android', 'com.whatsapp', 'com.whatsapp.android', 'com.blab']
+      }).catch((err) => console.log(err));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onSave = () => {
+    downloadInitiate();
+  };
+
+  const validateURL = (url) => {
+    if (url) {
+      if (!url.startsWith('https://')) {
+        url = 'https://'.concat(url);
+      }
+      try {
+        let validate_url = new URL(url);
+        return url;
+      } catch (err) {
+        console.log(err);
+        return false;
+      }
+    }
+  };
+
+  const urlToJSON = (url) => {
+    var aURL = '';
+    if (url.indexOf('?') > -1) {
+      aURL = url + '&__a=1';
     } else {
-      return (
-        // <img alt={`${post_data.username}`} src={`${post_data.media_url}`} />
-        <Image
-          source={{
-            uri:
-              // 'https://instagram.fdel25-1.fna.fbcdn.net/v/t51.2885-15/e35/80816679_880656345684599_6068253935871744002_n.jpg?_nc_ht=instagram.fdel25-1.fna.fbcdn.net&_nc_cat=111&_nc_ohc=SLV5_g9Ln2gAX-jTU2m&oh=8277e067f18c2212b9f355f59c816e1c&oe=5F54426D',
-              // 'https://instagram.fdel25-1.fna.fbcdn.net/v/t51.2885-15/e35/s1080x1080/117083117_352359552434458_4204805013101316422_n.jpg?_nc_ht=instagram.fdel25-1.fna.fbcdn.net&_nc_cat=1&_nc_ohc=eYh8E4bdLJYAX9EWzIP&oh=a609b4fffb634383f9f0072f1357b768&oe=5F55339B',
-              mediaUrl,
-          }}
-          resizeMode="contain"
-          style={{flex: 1, width: null, height: null}}
-        />
-      );
+      aURL = url + '?__a=1';
+    }
+    return aURL;
+  };
+
+  const displayError = () => {
+    Alert.alert(
+      'Error Occured',
+      'Either the URL is invalid or you are not logged in.',
+      [
+        {text: 'Login', onPress: () => navigation.navigate('LoginScreen')},
+        {
+          text: 'OK',
+          onPress: () => navigation.navigate('HomeScreen'),
+        },
+      ],
+      {cancelable: false},
+    );
+  };
+
+  const handleFetch = (fdata) => {
+    console.log('Handle Fetch:' + fdata);
+    fdata = JSON.parse(fdata);
+
+    if (fdata.success) {
+      console.log('========================setData');
+      setData({...fdata.shared_data});
+      setLoading(false);
+    } else {
+      displayError();
     }
   };
 
   return (
-    <ScrollView>
-      <View
-        style={{
-          flex: 1,
-          height,
-          width,
-          flexDirection: 'column',
-          justifyContent: 'space-around',
-          backgroundColor: 'red',
-        }}>
-        {/* <Text>ViewScreen: {route.params.blab_url}</Text> */}
-        <View
-          style={{
-            backgroundColor: '#121212',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}>
-          <View style={{flexDirection: 'row'}}>
-            <Image
-              style={{
-                height: 30,
-                width: 30,
-                borderRadius: 15,
-                margin: 10,
-                marginLeft: 25,
-                //   marginTop: 25,
-              }}
-              source={{uri: post_data.pp_url}}
-            />
-            <Text
-              style={{
-                fontWeight: '200',
-                textAlignVertical: 'center',
-                color: 'white',
-                fontSize: 18,
-              }}>
-              {post_data.username}
-            </Text>
-          </View>
-          <View>
-            <Text
-              style={{
-                backgroundColor: '#353535',
-                color: 'white',
-                borderRadius: 5,
-                marginRight: 35,
-                marginTop: 15,
-                paddingHorizontal: 5,
-                paddingVertical: 2,
-              }}>
-              Private
-            </Text>
-          </View>
-        </View>
+    <>
+      <View style={{flex: 0}}>
+        <WebView
+          source={{uri: urlToJSON(post_url)}}
+          injectedJavaScript={Scripts.fetchData__a}
+          onMessage={(event) => {
+            handleFetch(event.nativeEvent.data);
+          }}
+        />
+      </View>
 
-        <View style={{flex: 2, backgroundColor: '#121212'}}>
-          {returnMedia(post_data.media_url)}
-        </View>
-        <View style={{flex: 1, backgroundColor: '#121212'}}>
-          <Text
-            style={{
-              color: 'white',
-              fontWeight: 'bold',
-              fontSize: 16,
-              margin: 10,
-              marginHorizontal: 35,
-            }}>
-            {returnStats()}
-          </Text>
+      <View style={{flex: 5}}>
+        <View style={{flex: 1, backgroundColor: '#444'}}>
+          <PostPreview loading={loading} post_data={data} cache={false} />
         </View>
       </View>
-      <Text style={{color: 'white', backgroundColor: '#121212', padding: 20}}>
-        {post_data.caption}
-      </Text>
-    </ScrollView>
+
+      <View style={{flex: 2, backgroundColor: 'black'}}>
+        <ShareTray
+          loading={loading}
+          data={data}
+          blab_url={blab_url}
+          is_share_loading={is_share_loading}
+          is_shared={is_shared}
+          save_progress={save_progress}
+          is_saved={is_saved}
+          handlePressSUB={handlePressSUB}
+          onShare={onShare}
+          onShareImg={onShareImg}
+          onOpen={onOpen}
+          onSave={onSave}
+          onStory={onStory}
+          onRepost={onRepost}
+        />
+      </View>
+    </>
   );
 };
 
-export default ViewScreen;
+export default ShareScreen;
 
-// const styles = StyleSheet.create({})
+//Linking.openURL(post_url);
+
+// <Modal visible={share_modal_open} transparent={true}>
+//   <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.3)' }} onPress={() => { setShareModalOpen(!share_modal_open) }}>
+//     <View flex={5} flexDirection='column' justifyContent='flex-end'>
+//       <TouchableOpacity style={{ height: 50, width: 150, borderRadius: 10, backgroundColor: 'white', alignSelf: 'center' }}
+//         onPress={() => { Alert.alert(":|") }}></TouchableOpacity>
+//     </View><View flex={2}></View>
+//   </TouchableOpacity>
+// </Modal>
+
+/* Generate Link, Copy Link, Share Link*/
+/* Share Image, Download Media */
+/* Open Post, Remove watermark, Change BG color, Save Offline */

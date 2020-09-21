@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {
   View,
+  Text,
   ToastAndroid,
   PermissionsAndroid,
   Share,
@@ -11,10 +12,12 @@ import WebView from 'react-native-webview';
 import * as RNFS from 'react-native-fs';
 import ShareC from 'react-native-share';
 import RNFetchBlob from 'rn-fetch-blob';
+import Clipboard from '@react-native-community/clipboard';
 
 import {Scripts} from '../scripts';
 import PostPreview from '../PostPreview';
 import ShareTray from '../ShareTray';
+import ThemedModal from '../ThemedModal';
 
 const ShareScreen = ({route, navigation}) => {
   const abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
@@ -47,7 +50,12 @@ const ShareScreen = ({route, navigation}) => {
   const [saved_location, setSavedLocation] = useState();
   const [saved_mime, setSavedMime] = useState();
 
-  const [share_modal_open, setShareModalOpen] = useState(true);
+  const [modal_data, setModalData] = useState({
+    visible: false,
+    heading: null,
+    text: null,
+    action: () => {},
+  });
 
   useEffect(() => {
     post_url = validateURL(post_url);
@@ -74,7 +82,19 @@ const ShareScreen = ({route, navigation}) => {
         setBlabUrl(data.data);
         setIsShared(true);
         setIsShareLoading(false);
-      });
+      })
+      .catch((err) =>
+        setModalData({
+          visible: true,
+          heading: 'Error Occured',
+          text:
+            'Could not connect to the server. Check your internet connection and try again.',
+          action: () => {
+            setModalData({visible: false});
+            navigation.navigate('HomeScreen');
+          },
+        }),
+      );
   };
 
   const downloadMedia = () => {
@@ -103,7 +123,18 @@ const ShareScreen = ({route, navigation}) => {
           ToastAndroid.SHORT,
           ToastAndroid.BOTTOM,
         );
-      });
+      })
+      .catch((err) =>
+        setModalData({
+          visible: true,
+          heading: 'Error Occured',
+          text: 'Could not save the media. Check your internet connection.',
+          action: () => {
+            setModalData({visible: false});
+            navigation.navigate('HomeScreen');
+          },
+        }),
+      );
   };
 
   const dummyDownload = new Promise((resolve, reject) => {
@@ -124,10 +155,20 @@ const ShareScreen = ({route, navigation}) => {
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         downloadMedia();
       } else {
-        Alert.alert(
-          'Permission Denied!',
-          'You need to give storage permission to download the file',
-        );
+        // Alert.alert(
+        //   'Permission Denied!',
+        //   'You need to give storage permission to download the file',
+        // );
+
+        setModalData({
+          visible: true,
+          heading: 'Permission Denied!',
+          text: 'You need to give storage permission to download the file.',
+          action: () => {
+            setModalData({visible: false});
+            navigation.navigate('HomeScreen');
+          },
+        });
       }
     } catch (err) {
       console.warn(err);
@@ -140,6 +181,7 @@ const ShareScreen = ({route, navigation}) => {
       await Share.share({
         title: 'Send Link',
         message: blab_url,
+        excludedActivityTypes: ['com.blab'],
       });
     } catch (error) {
       console.log(error);
@@ -158,7 +200,7 @@ const ShareScreen = ({route, navigation}) => {
       );
 
       await ShareC.open({
-        url: 'file://' + abs_ext_path + 'filename.png',
+        url: 'file://' + abs_ext_path + '.cache/filename.png',
         type: 'image/jpeg',
       }).catch((err) => {
         console.log(err);
@@ -217,6 +259,15 @@ const ShareScreen = ({route, navigation}) => {
   const onRepost = async () => {
     console.log('========================onRepost');
     try {
+      //copy caption
+      console.log(data.caption);
+      Clipboard.setString(data.caption);
+      ToastAndroid.showWithGravity(
+        'Copied caption to clipboard',
+        ToastAndroid.SHORT,
+        ToastAndroid.BOTTOM,
+      );
+
       let is_video = data.video_view_count ? true : false;
       console.log('is_video: ', is_video);
 
@@ -287,18 +338,27 @@ const ShareScreen = ({route, navigation}) => {
   };
 
   const displayError = () => {
-    Alert.alert(
-      'Error Occured',
-      'Either the URL is invalid or you are not logged in.',
-      [
-        {text: 'Login', onPress: () => navigation.navigate('LoginScreen')},
-        {
-          text: 'OK',
-          onPress: () => navigation.navigate('HomeScreen'),
-        },
-      ],
-      {cancelable: false},
-    );
+    // Alert.alert(
+    //   'Error Occured',
+    //   'Either the URL is invalid or you are not logged in.',
+    //   [
+    //     {text: 'Login', onPress: () => navigation.navigate('LoginScreen')},
+    //     {
+    //       text: 'OK',
+    //       onPress: () => navigation.navigate('HomeScreen'),
+    //     },
+    //   ],
+    //   {cancelable: false},
+    // );
+    setModalData({
+      visible: true,
+      heading: 'Error Occured!',
+      text: 'Either the URL is invalid or you are not logged in.',
+      action: () => {
+        setModalData({visible: false});
+        navigation.navigate('HomeScreen');
+      },
+    });
   };
 
   const handleFetch = (fdata) => {
@@ -323,12 +383,31 @@ const ShareScreen = ({route, navigation}) => {
           onMessage={(event) => {
             handleFetch(event.nativeEvent.data);
           }}
+          onError={() => {
+            console.log('Connection Issue');
+            setModalData({
+              visible: true,
+              heading: 'Error Occured!',
+              text: 'Please check your internet connection.',
+              action: () => {
+                setModalData({visible: false});
+                navigation.navigate('HomeScreen');
+              },
+            });
+          }}
         />
       </View>
 
+      <ThemedModal
+        visible={modal_data.visible}
+        heading={modal_data.heading}
+        text={modal_data.text}
+        action={modal_data.action}
+      />
+
       <View style={{flex: 5}}>
         <View style={{flex: 1, backgroundColor: '#444'}}>
-          <PostPreview loading={loading} post_data={data} />
+          <PostPreview loading={loading} post_data={data} cache={true} />
         </View>
       </View>
 

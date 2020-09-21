@@ -17,7 +17,7 @@ exports.Scripts = {
   `,
   fetchData__a: `
     var data = {shared_data:{post_url:null, img_url:null, media_url:null, video_view_count:null, height:null, width:null, username:null, pp_url:null, is_private:null, is_verified:null, likes_count:null, comments_count:null, caption:null, sidecar:[]}, success:false}
-    if(document.URL){
+    if(document.URL && document.URL!=='about:blank'){
       try{
         var sharedData = JSON.parse(document.getElementsByTagName("pre")[0].innerText)
 
@@ -37,8 +37,9 @@ exports.Scripts = {
 
         data.success = true;
         window.ReactNativeWebView.postMessage(JSON.stringify(data));
-      }catch(_){
+      }catch(e){
         data.success = false;
+        data.msg = e.message + document.URL;
         window.ReactNativeWebView.postMessage(JSON.stringify(data));
       }
     }
@@ -63,7 +64,7 @@ exports.Scripts = {
     var data = {user_data:{username:null, pp_url:null, followers_count:null, following_count:null, user_id:null, is_private:null, is_verified:null}, success:false};
 
     async function getData(){
-      if(document.URL){
+      if(document.URL && document.URL!=='about:blank'){
         try{
           let username_data = JSON.parse(document.getElementsByTagName("pre")[0].innerText);
           var username = username_data.form_data.username;

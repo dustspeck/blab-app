@@ -7,6 +7,7 @@ import ShareScreen from './components/pages/ShareScreen';
 import HomeScreen from './components/pages/HomeScreen';
 import LoginScreen from './components/pages/LoginScreen';
 import ViewScreen from './components/pages/ViewScreen';
+import BlabScreen from './components/pages/BlabScreen';
 
 const Stack = createStackNavigator();
 
@@ -22,7 +23,7 @@ const App: () => React$Node = ({navigation}) => {
         <Stack.Screen
           name="ViewScreen"
           component={ViewScreen}
-          options={{title: 'Blab for IG', headerShown: true}}
+          options={{title: 'Blab for IG'}}
         />
         <Stack.Screen
           name="ShareScreen"
@@ -35,6 +36,11 @@ const App: () => React$Node = ({navigation}) => {
           name="LoginScreen"
           component={LoginScreen}
           options={{title: 'Instagram', headerShown: false}}
+        />
+        <Stack.Screen
+          name="BlabScreen"
+          component={BlabScreen}
+          options={{title: 'Blab for IG'}}
         />
       </Stack.Navigator>
     </NavigationContainer>

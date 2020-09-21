@@ -16,10 +16,13 @@ import {
   Dimensions,
   PermissionsAndroid,
 } from 'react-native';
+import * as RNFS from 'react-native-fs';
 import AsyncStorage from '@react-native-community/async-storage';
 
 const BlabbedList = ({data, setData, navigation}) => {
   const {width, height} = Dimensions.get('window');
+  const abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
+
   console.log('BL Data: ' + data);
 
   const removeElement = async (item) => {
@@ -29,18 +32,19 @@ const BlabbedList = ({data, setData, navigation}) => {
       pre = JSON.parse(pre);
       console.log('Pre: ' + JSON.stringify(pre));
       let new_data = [];
-      // data.map((d) => {
-      //   if (d.id !== item.id) {
-      //     new_data.push(item);
-      //   }
-      // });
-      new_data = data.filter((d) => d.id !== item.id);
+      let r_pid;
+      new_data = data.filter((d) => {
+        if (!r_pid) r_pid = d.id == item.id ? item.thumbnail : null;
+        return d.id !== item.id;
+      });
       new_data = {data: new_data};
       await AsyncStorage.setItem(
         'db_blabbed_history',
         JSON.stringify(new_data),
       );
       setData(new_data.data);
+      console.log('Remove PID: ', r_pid);
+      await RNFS.unlink(`${r_pid}`);
     } catch (err) {
       console.log(err);
     }
@@ -68,8 +72,14 @@ const BlabbedList = ({data, setData, navigation}) => {
           return (
             <Pressable
               onPress={() => {
-                Alert.alert(`Under Dev: ${JSON.stringify(item)}`);
-                // navigation.navigate('ViewScreen', {blab_url: 'Et0NXHRp5aIW'});
+                navigation.navigate('ViewScreen', {
+                  post_url: item.post_url,
+                });
+                // navigation.navigate('BlabScreen', {
+                //   blab_url: 'https://blabforig.com/p/X9x3a0TJvanH',
+                // });
+                // navigation.navigate('BlabScreen', {blab_url: 'https://blabforig.com/p/X9x3a0TJvanH'});
+                // navigation.navigate('BlabScreen', {blab_url: 'https://blabforig.com/p/tCulwiK2Ohwx'});
               }}
               onLongPress={() => {
                 Alert.alert(
@@ -92,7 +102,6 @@ const BlabbedList = ({data, setData, navigation}) => {
                 style={Styles.historyPreview}
                 source={{uri: 'file:///' + item.thumbnail}}
               />
-              {/* <Image style={Styles.historyPreview} source={item.uri} /> */}
             </Pressable>
           );
         }}

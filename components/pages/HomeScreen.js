@@ -19,6 +19,7 @@ import GuestDetails from '../GuestDetails';
 import UrlInput from '../UrlInput';
 import BlabbedList from '../BlabbedList';
 import AskPermissions from '../AskPermissions';
+import ThemedModal from '../ThemedModal';
 
 const HomeScreen = ({navigation, shared_data, route}) => {
   //constants
@@ -53,6 +54,13 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   });
   const [blabbed_history, setBlabbedHistory] = useState([]);
   const [last_perm, setLastPerm] = useState(true);
+  const [nointernet_modal, setNoInternetModal] = useState(false);
+  const [modal_data, setModalData] = useState({
+    visible: false,
+    heading: null,
+    text: null,
+    action: () => {},
+  });
 
   //constants
   const initializeConstants = async () => {
@@ -68,6 +76,25 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     } catch (err) {
       console.log(err);
     }
+  };
+
+  const initialURLGetter = async () => {
+    const blab_url = await Linking.getInitialURL();
+    if (blab_url) {
+      navigation.navigate('BlabScreen', {blab_url});
+    }
+  };
+
+  //updates
+  const checkUpdates = () => {
+    setModalData({
+      visible: true,
+      heading: 'Update Available',
+      text: 'Nvm, just checking',
+      action: () => {
+        setModalData({visible: false});
+      },
+    });
   };
 
   //db
@@ -164,6 +191,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   useEffect(() => {
     initializeConstants();
     connectData();
+    checkUpdates();
   }, []);
 
   useEffect(() => {
@@ -183,13 +211,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   }, []);
 
   useEffect(() => {
-    const post_url = Linking.getInitialURL().then((post_url) => {
-      var valid_url = validateURL(post_url);
-      if (valid_url !== false) {
-        navigation.navigate('ShareScreen', {valid_url});
-      }
-    });
-    return () => {};
+    initialURLGetter();
   }, []);
 
   useEffect(() => {
@@ -217,59 +239,68 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   }, [load]);
 
   return (
-    <View style={{flex: 1, minHeight: height}}>
-      <View style={{flex: 0}}>
-        <WebView
-          ref={LoginWebView}
-          source={{uri: 'https://www.instagram.com/accounts/edit/?__a=1'}}
-          injectedJavaScript={Scripts.fetchUserDetails__a}
-          onMessage={(event) => {
-            console.log(event.nativeEvent.data);
-            handleUserData(event.nativeEvent.data);
-          }}
-        />
-      </View>
+    <>
+      <ThemedModal
+        visible={modal_data.visible}
+        heading={modal_data.heading}
+        text={modal_data.text}
+        action={modal_data.action}
+      />
 
-      {loading ? (
-        //data is loading
-        <View style={{backgroundColor: '#151515', flex: 0.6}}>
-          <ActivityIndicator style={{margin: 10}} size="large" color="#fff" />
-        </View>
-      ) : user_details.username === null ? (
-        //not logged in
-        <View style={{backgroundColor: '#151515', flex: 0.6}}>
-          <GuestDetails
-            blab_count={blabbed_history ? blabbed_history.length : 0}
-            navigation={navigation}
+      <View style={{flex: 1, minHeight: height}}>
+        <View style={{flex: 0}}>
+          <WebView
+            ref={LoginWebView}
+            source={{uri: 'https://www.instagram.com/accounts/edit/?__a=1'}}
+            injectedJavaScript={Scripts.fetchUserDetails__a}
+            onMessage={(event) => {
+              console.log(event.nativeEvent.data);
+              handleUserData(event.nativeEvent.data);
+            }}
           />
         </View>
-      ) : (
-        //logged in
-        <View
-          style={{
-            backgroundColor: '#151515',
-            flex: 0.6,
-          }}>
-          <UserDetails
-            blab_count={blabbed_history ? blabbed_history.length : 0}
-            ig_details={{...user_details}}
-          />
-        </View>
-      )}
 
-      <View style={{backgroundColor: '#151515', flex: 1}}>
-        <UrlInput navigation={navigation} />
-        {has_permission || last_perm ? (
-          <BlabbedList
-            data={blabbed_history}
-            setData={handleSetData}
-            navigation={navigation}
-          />
+        {loading ? (
+          //data is loading
+          <View style={{backgroundColor: '#151515', flex: 0.6}}>
+            <ActivityIndicator style={{margin: 10}} size="large" color="#fff" />
+          </View>
+        ) : user_details.username === null ? (
+          //not logged in
+          <View style={{backgroundColor: '#151515', flex: 0.6}}>
+            <GuestDetails
+              blab_count={blabbed_history ? blabbed_history.length : 0}
+              navigation={navigation}
+            />
+          </View>
         ) : (
-          <AskPermissions onSuccess={onSuccess} />
+          //logged in
+          <View
+            style={{
+              backgroundColor: '#151515',
+              flex: 0.6,
+            }}>
+            <UserDetails
+              blab_count={blabbed_history ? blabbed_history.length : 0}
+              ig_details={{...user_details}}
+            />
+          </View>
         )}
+
+        <View style={{backgroundColor: '#151515', flex: 1}}>
+          <UrlInput navigation={navigation} />
+          {has_permission || last_perm ? (
+            <BlabbedList
+              data={blabbed_history}
+              setData={handleSetData}
+              navigation={navigation}
+            />
+          ) : (
+            <AskPermissions onSuccess={onSuccess} />
+          )}
+        </View>
       </View>
-    </View>
+    </>
   );
 };
 
