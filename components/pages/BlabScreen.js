@@ -146,13 +146,14 @@ const ViewScreen = ({route, navigation}) => {
               flexDirection: 'row',
               justifyContent: 'space-between',
             }}>
-            <View style={{flexDirection: 'row'}}>
+            <View
+              style={{flexDirection: 'row'}}
+              onPress={() => {
+                Linking.openURL(
+                  'instagram://user?username=' + post_data.username,
+                );
+              }}>
               <Image
-                onPress={() => {
-                  Linking.openURL(
-                    'instagram://user?username=' + post_data.username,
-                  );
-                }}
                 style={{
                   height: 30,
                   width: 30,
@@ -163,11 +164,6 @@ const ViewScreen = ({route, navigation}) => {
                 source={{uri: post_data.pp_url}}
               />
               <Text
-                onPress={() => {
-                  Linking.openURL(
-                    'instagram://user?username=' + post_data.username,
-                  );
-                }}
                 style={{
                   fontWeight: '200',
                   textAlignVertical: 'center',

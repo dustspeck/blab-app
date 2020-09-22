@@ -5,7 +5,7 @@ import {StyleSheet} from 'react-native';
 import verified_badge from '../public/assets/img/vbadge.png';
 import private_badge from '../public/assets/img/pbadge.png';
 
-const UserDetails = ({blab_count, ig_details}) => {
+const UserDetails = ({blab_count, ig_details, onLogout}) => {
   console.log(ig_details);
 
   return (
@@ -37,7 +37,7 @@ const UserDetails = ({blab_count, ig_details}) => {
               <Text style={{color: 'white', fontSize: 18, alignSelf: 'center'}}>
                 Logged in as
               </Text>
-              <TouchableOpacity style={Styles.logoutButton} onPress={() => {}}>
+              <TouchableOpacity style={Styles.logoutButton} onPress={onLogout}>
                 <Text style={{color: 'white'}}>Logout</Text>
               </TouchableOpacity>
             </View>

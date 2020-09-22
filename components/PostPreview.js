@@ -88,7 +88,7 @@ export class PostPreview extends Component {
         //add data
         let pre = await AsyncStorage.getItem('db_blabbed_history');
         pre = JSON.parse(pre);
-        pre.data.push({
+        pre.data.unshift({
           id: Math.floor(Math.random() * 1000000),
           thumbnail:
             this.abs_ext_path +

@@ -37,9 +37,8 @@ exports.Scripts = {
 
         data.success = true;
         window.ReactNativeWebView.postMessage(JSON.stringify(data));
-      }catch(e){
-        data.success = false;
-        data.msg = e.message + document.URL;
+      }catch(err){
+        data.message = "Error:" + err.message + " At:" + document.URL;
         window.ReactNativeWebView.postMessage(JSON.stringify(data));
       }
     }
@@ -81,7 +80,9 @@ exports.Scripts = {
           data.user_data.is_private = user_data_json.graphql.user.is_private;
           data.user_data.is_verified = user_data_json.graphql.user.is_verified;
           data.success = true;
-        }catch(_){}
+        }catch(err){
+          data.message = "Error:" + err.message + " At:" + document.URL;
+        }
         window.ReactNativeWebView.postMessage(JSON.stringify(data));
       }
     }

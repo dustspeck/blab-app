@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import * as RNFS from 'react-native-fs';
 import WebView from 'react-native-webview';
+import CookieManager from 'react-native-cookies';
 import ShareMenu from 'react-native-share-menu';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -187,6 +188,22 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     LoginWebView.current.reload();
   };
 
+  onLogout = async () => {
+    LoginWebView.current.clearCache(true);
+    const cc = await CookieManager.clearAll();
+    console.log('CookieManager.clearAll =>', cc);
+    setUserDetails({
+      username: null,
+      pp_url: null,
+      follwers_count: null,
+      following_count: null,
+      user_id: null,
+      is_private: null,
+      is_verified: null,
+    });
+    LoginWebView.current.reload();
+  };
+
   //useeffects
   useEffect(() => {
     initializeConstants();
@@ -283,6 +300,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
             <UserDetails
               blab_count={blabbed_history ? blabbed_history.length : 0}
               ig_details={{...user_details}}
+              onLogout={onLogout}
             />
           </View>
         )}
