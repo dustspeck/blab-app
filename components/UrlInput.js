@@ -85,8 +85,8 @@ const UrlInput = ({navigation}) => {
           autoCorrect={false}
           autoCapitalize={'none'}
           returnKeyType="done"
-          // autoFocus={true}
-          // selectTextOnFocus={true}
+          autoFocus={true}
+          selectTextOnFocus={true}
         />
         <TouchableOpacity
           disabled={!input_valid}

@@ -31,7 +31,7 @@ const GuestDetails = ({blab_count, navigation}) => {
               margin: 15,
               marginBottom: 10,
             }}>
-            Login using Instagram
+            Wanna share Private posts?
           </Text>
           <Text
             style={{
@@ -40,7 +40,7 @@ const GuestDetails = ({blab_count, navigation}) => {
               alignSelf: 'center',
               marginHorizontal: 35,
             }}>
-            When you login to Instagram, you can share private posts of the
+            When you connect Instagram, you can share private posts of the
             accounts you follow.
           </Text>
           <View

@@ -155,11 +155,6 @@ const ShareScreen = ({route, navigation}) => {
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         downloadMedia();
       } else {
-        // Alert.alert(
-        //   'Permission Denied!',
-        //   'You need to give storage permission to download the file',
-        // );
-
         setModalData({
           visible: true,
           heading: 'Permission Denied!',
