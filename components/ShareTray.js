@@ -75,7 +75,10 @@ const ShareTray = ({
                           flexDirection: 'row',
                           justifyContent: 'space-between',
                         }}>
-                        <TouchableOpacity activeOpacity={0.8} onPress={onShare}>
+                        <TouchableOpacity
+                          disabled={loading}
+                          activeOpacity={0.8}
+                          onPress={onShare}>
                           <View style={Styles.roundButton}>
                             <Icon
                               style={Styles.iconStyle}
@@ -84,6 +87,7 @@ const ShareTray = ({
                           </View>
                         </TouchableOpacity>
                         <TouchableOpacity
+                          disabled={loading}
                           activeOpacity={0.8}
                           onPress={() => {
                             Clipboard.setString(blab_url);
@@ -134,7 +138,7 @@ const ShareTray = ({
                     }}>
                     <TouchableOpacity
                       activeOpacity={0.8}
-                      // onPress={() => { setShareModalOpen(true) }}
+                      disabled={loading}
                       onPress={onShareImg}>
                       <View style={Styles.roundButton}>
                         <Icon style={Styles.iconStyle} name="image-outline" />
@@ -152,7 +156,9 @@ const ShareTray = ({
                     <TouchableOpacity
                       activeOpacity={0.8}
                       onPress={save_progress == 1 ? onOpen : onSave}
-                      disabled={save_progress > 0 && save_progress < 1}>
+                      disabled={
+                        loading ? true : save_progress > 0 && save_progress < 1
+                      }>
                       <View style={Styles.roundButton}>
                         <Icon
                           style={
@@ -202,7 +208,9 @@ const ShareTray = ({
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={onStory}
-                disabled={save_progress > 0 && save_progress < 1}>
+                disabled={
+                  loading ? true : save_progress > 0 && save_progress < 1
+                }>
                 <View
                   style={{
                     backgroundColor: is_saved ? 'rgb(200, 220, 200)' : 'white',
@@ -240,7 +248,9 @@ const ShareTray = ({
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={onRepost}
-                disabled={save_progress > 0 && save_progress < 1}>
+                disabled={
+                  loading ? true : save_progress > 0 && save_progress < 1
+                }>
                 <View
                   style={{
                     backgroundColor: is_saved ? 'rgb(200, 220, 200)' : 'white',
@@ -304,7 +314,6 @@ const Styles = StyleSheet.create({
     textAlignVertical: 'center',
     marginTop: 'auto',
     marginBottom: 'auto',
-    // backgroundColor: 'blue',
   },
 });
 export default ShareTray;
