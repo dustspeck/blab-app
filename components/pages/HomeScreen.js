@@ -15,6 +15,7 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import {Scripts} from '../scripts';
+import WelcomePage from '../WelcomePage';
 import UserDetails from '../UserDetails';
 import GuestDetails from '../GuestDetails';
 import UrlInput from '../UrlInput';
@@ -41,9 +42,8 @@ const HomeScreen = ({navigation, shared_data, route}) => {
 
   //states
   const [has_permission, setHasPermission] = useState(false);
-  const [first_run, setFirstRun] = useState(false);
+  const [isFirstRun, setIsFirstRun] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [load, setLoad] = useState();
   const [user_details, setUserDetails] = useState({
     username: null,
     pp_url: null,
@@ -60,8 +60,9 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     visible: false,
     heading: null,
     text: null,
-    action: () => {},
+    buttons: [],
   });
+  const [isWVLoading, setIsWVLoading] = useState(false);
 
   //constants
   const initializeConstants = async () => {
@@ -92,14 +93,28 @@ const HomeScreen = ({navigation, shared_data, route}) => {
       visible: true,
       heading: 'Update Available',
       text: 'Nvm, just checking',
-      action: () => {
-        setModalData({visible: false});
-      },
+      buttons: [
+        {
+          text: 'UPDATE',
+          action: () => {
+            setModalData({...modal_data, visible: false});
+          },
+        },
+      ],
     });
   };
 
   //db
   const connectData = async () => {
+    console.log(route);
+    try {
+      if (route.params.load) {
+        LoginWebView.current.reload();
+        console.log('=============== RELOAD: ' + route.params.load);
+      }
+    } catch (error) {
+      console.log(error);
+    }
     try {
       let data = await AsyncStorage.getItem('db_blabbed_history');
       console.log('DB: ' + data);
@@ -117,7 +132,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
         // setBlabbedHistory(history);
         setBlabbedHistory(history.data);
       } else {
-        setFirstRun(true);
+        setIsFirstRun(true);
         let empty_data = {data: []};
         await AsyncStorage.setItem(
           'db_blabbed_history',
@@ -139,7 +154,11 @@ const HomeScreen = ({navigation, shared_data, route}) => {
 
   //URL
   const extractURL = (text) => {
-    let link = text.substr(text.indexOf('https://www.instagram.com/p/'));
+    let link = text.substr(
+      text.indexOf('https://www.instagram.com/p/') > -1
+        ? text.indexOf('https://www.instagram.com/p/')
+        : text.indexOf('https://www.instagram.com/reel/'),
+    );
     link = link.substr(
       0,
       link.indexOf(' ') > -1 ? link.indexOf(' ') : link.length,
@@ -151,7 +170,11 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     if (url) {
       console.log('validateURL rec:' + url);
       if (!url.startsWith('https://')) url = 'https://'.concat(url);
-      if (!url.startsWith('https://www.instagram.com/p/')) return false;
+      if (
+        !url.startsWith('https://www.instagram.com/p/') &&
+        !url.startsWith('https://www.instagram.com/reel/')
+      )
+        return false;
       try {
         let validate_url = new URL(url);
         return url;
@@ -179,14 +202,15 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     data = JSON.parse(data);
     if (data.success == true) {
       setUserDetails({...data.user_data});
+    } else {
+      setUserDetails({username: null});
     }
     setLoading(false);
   };
 
-  reloadWebview = () => {
-    console.log('RELOADED');
-    LoginWebView.current.reload();
-  };
+  // reloadWebview = () => {
+  //   LoginWebView.current.reload();
+  // };
 
   onLogout = async () => {
     LoginWebView.current.clearCache(true);
@@ -232,36 +256,19 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   }, []);
 
   useEffect(() => {
-    console.log('RELOADED');
     LoginWebView.current.reload();
   }, []);
 
-  useEffect(() => {
-    try {
-      if (route.params.load) {
-        setLoad(true);
-      } else {
-        setLoad(false);
-      }
-    } catch (_) {}
-  });
-
-  useEffect(() => {
-    try {
-      if (route.params.load) {
-        const {load} = route.params;
-        if (load) reloadWebview();
-      }
-    } catch (_) {}
-  }, [load]);
-
   return (
     <>
+      {isFirstRun && (
+        <WelcomePage isFirstRun={isFirstRun} setIsFirstRun={setIsFirstRun} />
+      )}
       <ThemedModal
         visible={modal_data.visible}
         heading={modal_data.heading}
         text={modal_data.text}
-        action={modal_data.action}
+        buttons={modal_data.buttons}
       />
 
       <View style={{flex: 1, minHeight: height}}>
@@ -274,36 +281,35 @@ const HomeScreen = ({navigation, shared_data, route}) => {
               console.log(event.nativeEvent.data);
               handleUserData(event.nativeEvent.data);
             }}
+            onLoadStart={() => {
+              setIsWVLoading(true);
+            }}
+            onLoadEnd={() => {
+              setIsWVLoading(false);
+            }}
           />
         </View>
 
-        {loading ? (
-          //data is loading
-          <View style={{backgroundColor: '#151515', flex: 0.6}}>
+        <View style={{backgroundColor: '#151515', flex: 0.6}}>
+          {loading ? (
+            //data is loading
             <ActivityIndicator style={{margin: 10}} size="large" color="#fff" />
-          </View>
-        ) : user_details.username === null ? (
-          //not logged in
-          <View style={{backgroundColor: '#151515', flex: 0.6}}>
+          ) : user_details.username === null ? (
+            //not logged in
             <GuestDetails
+              isWVLoading={isWVLoading}
               blab_count={blabbed_history ? blabbed_history.length : 0}
               navigation={navigation}
             />
-          </View>
-        ) : (
-          //logged in
-          <View
-            style={{
-              backgroundColor: '#151515',
-              flex: 0.6,
-            }}>
+          ) : (
+            //logged in
             <UserDetails
               blab_count={blabbed_history ? blabbed_history.length : 0}
               ig_details={{...user_details}}
               onLogout={onLogout}
             />
-          </View>
-        )}
+          )}
+        </View>
 
         <View style={{backgroundColor: '#151515', flex: 1}}>
           <UrlInput navigation={navigation} />

@@ -3,6 +3,9 @@ import {StyleSheet, ToastAndroid} from 'react-native';
 import {View, Button, Text, TouchableOpacity} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
 import Icon from 'react-native-vector-icons/Ionicons';
+import LinearGradient from 'react-native-linear-gradient';
+
+import * as Constants from './constants';
 
 const ShareTray = ({
   loading,
@@ -51,22 +54,36 @@ const ShareTray = ({
                         activeOpacity={0.8}
                         disabled={loading}
                         onPress={handlePressSUB}>
-                        <View
+                        <LinearGradient
+                          start={{x: 0.0, y: 0.0}}
+                          end={{x: 1.0, y: 1.0}}
+                          colors={[
+                            Constants.PRIMARY_COLOR,
+                            Constants.SECONDARY_COLOR,
+                          ]}
+                          // colors={['white', 'white']}
                           style={{
                             backgroundColor: 'white',
                             width: '100%',
                             height: 70,
                             borderRadius: 35,
+                            // borderWidth: 3,
+                            borderColor: Constants.PRIMARY_COLOR,
                           }}>
                           <Icon
-                            style={Styles.iconStyle}
+                            style={{
+                              ...Styles.iconStyle,
+                              color: Constants.PRIMARY_COLOR,
+                              color: 'white',
+                            }}
+                            // style={Styles.iconStyle}
                             name={
                               is_share_loading
                                 ? 'hourglass-outline'
                                 : 'globe-outline'
                             }
                           />
-                        </View>
+                        </LinearGradient>
                       </TouchableOpacity>
                     ) : (
                       <View
@@ -79,9 +96,17 @@ const ShareTray = ({
                           disabled={loading}
                           activeOpacity={0.8}
                           onPress={onShare}>
-                          <View style={Styles.roundButton}>
+                          <View
+                            style={{
+                              ...Styles.roundButton,
+                              borderColor: Constants.PRIMARY_COLOR,
+                              borderWidth: 3,
+                            }}>
                             <Icon
-                              style={Styles.iconStyle}
+                              style={{
+                                ...Styles.iconStyle,
+                                color: Constants.PRIMARY_COLOR,
+                              }}
                               name="link-outline"
                             />
                           </View>
@@ -93,9 +118,17 @@ const ShareTray = ({
                             Clipboard.setString(blab_url);
                             ToastAndroid.show('Copied', ToastAndroid.SHORT);
                           }}>
-                          <View style={Styles.roundButton}>
+                          <View
+                            style={{
+                              ...Styles.roundButton,
+                              borderColor: Constants.PRIMARY_COLOR,
+                              borderWidth: 3,
+                            }}>
                             <Icon
-                              style={Styles.iconStyle}
+                              style={{
+                                ...Styles.iconStyle,
+                                color: Constants.PRIMARY_COLOR,
+                              }}
                               name="copy-outline"
                             />
                           </View>

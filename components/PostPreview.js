@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ToastAndroid,
+  ScrollView,
 } from 'react-native';
 import ViewShot from 'react-native-view-shot';
 import * as RNFS from 'react-native-fs';
@@ -45,22 +46,26 @@ export class PostPreview extends Component {
     //take viewshot after 500ms and save
     try {
       setTimeout(() => {
-        this.refs.viewShot
-          .capture({result: 'data-uri', format: 'jpeg'})
-          .then((uri) => {
-            this.setState({img_uri: uri});
+        try {
+          this.refs.viewShot
+            .capture({result: 'data-uri', format: 'jpeg'})
+            .then((uri) => {
+              this.setState({img_uri: uri});
 
-            //move from cache to ext stg
-            RNFS.moveFile(
-              this.state.img_uri,
-              this.abs_ext_path + '.cache/' + 'filename.png',
-            )
-              .then((success) => {
-                console.log('done move');
-                this.setState({toggle_load: false});
-              })
-              .catch((err) => console.log(err));
-          });
+              //move from cache to ext stg
+              RNFS.moveFile(
+                this.state.img_uri,
+                this.abs_ext_path + '.cache/' + 'sticker.png',
+              )
+                .then((success) => {
+                  console.log('done move');
+                  this.setState({toggle_load: false});
+                })
+                .catch((err) => console.log(err));
+            });
+        } catch (err) {
+          console.log(err);
+        }
       }, 500);
     } catch (error) {
       console.log(error);
@@ -178,7 +183,7 @@ export class PostPreview extends Component {
               }}
               style={{
                 flex: 1,
-                backgroundColor: this.state.dark ? '#ffffff' : '#242424',
+                backgroundColor: this.state.dark ? '#ffffff' : '#252525',
                 borderTopLeftRadius: 30,
                 borderBottomLeftRadius: 30,
                 elevation: 20,
@@ -198,7 +203,7 @@ export class PostPreview extends Component {
                   marginLeft: 'auto',
                   marginRight: 'auto',
                   textAlignVertical: 'center',
-                  color: this.state.dark ? '#242424' : 'white',
+                  color: this.state.dark ? '#252525' : 'white',
                 }}
               />
             </TouchableOpacity>
@@ -222,7 +227,7 @@ export class PostPreview extends Component {
               }}
               style={{
                 flex: 1,
-                backgroundColor: this.state.dark ? '#ffffff' : '#242424',
+                backgroundColor: this.state.dark ? '#ffffff' : '#252525',
                 borderTopLeftRadius: 30,
                 borderBottomLeftRadius: 30,
                 elevation: 20,
@@ -238,91 +243,95 @@ export class PostPreview extends Component {
                   marginLeft: 'auto',
                   marginRight: 'auto',
                   textAlignVertical: 'center',
-                  color: this.state.dark ? '#242424' : 'white',
+                  color: this.state.dark ? '#252525' : 'white',
                 }}
               />
             </TouchableOpacity>
           </View>
-          <ViewShot
-            ref="viewShot"
-            style={styles.VSBorder}
-            options={{quality: 0.6}}>
-            <View
-              style={{
-                ...styles.card,
-                backgroundColor: this.state.dark ? '#242424' : 'white',
-              }}>
-              <Image
-                style={styles.pp}
-                source={{uri: this.props.post_data.pp_url}}
-              />
-
-              <Text
+          <View style={styles.VSBorder}>
+            <ScrollView
+              contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}>
+              <ViewShot
+                ref="viewShot"
                 style={{
-                  ...styles.username,
-                  color: this.state.dark ? 'white' : 'black',
+                  ...styles.card,
+                  backgroundColor: this.state.dark ? '#252525' : 'white',
                 }}>
-                {this.props.post_data.username.toString().length > 16
-                  ? this.props.post_data.username.toString().substring(0, 16) +
-                    '...'
-                  : this.props.post_data.username}
-              </Text>
-
-              {this.props.post_data.is_private && (
                 <Image
-                  style={styles.privateLock}
-                  source={this.state.dark ? lock_d_logo : lock_logo}
+                  style={styles.pp}
+                  source={{uri: this.props.post_data.pp_url}}
                 />
-              )}
 
-              <Image
-                style={{
-                  height: this.props.post_data.height * this.state.sizeF,
-                  width: this.props.post_data.width * this.state.sizeF,
-                  resizeMode: 'contain',
-                  marginTop: 45,
-                }}
-                source={{
-                  uri: this.props.post_data.img_url
-                    ? this.props.post_data.img_url
-                    : 'data:',
-                }}
-                onLoad={this.onImageLoad}
-              />
+                <Text
+                  style={{
+                    ...styles.username,
+                    color: this.state.dark ? 'white' : 'black',
+                  }}>
+                  {this.props.post_data.username.toString().length > 16
+                    ? this.props.post_data.username
+                        .toString()
+                        .substring(0, 16) + '...'
+                    : this.props.post_data.username}
+                </Text>
 
-              <Text
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  margin: 5,
-                  marginLeft: 10,
-                  fontSize: 14,
-                  color: this.state.dark ? 'white' : 'black',
-                }}>
-                {this.props.post_data.video_view_count
-                  ? this.formatVnC(
-                      this.props.post_data.video_view_count,
-                      this.props.post_data.comments_count,
-                    )
-                  : this.formatLnC(
-                      this.props.post_data.likes_count,
-                      this.props.post_data.comments_count,
-                    )}
-              </Text>
+                {this.props.post_data.is_private && (
+                  <Image
+                    style={styles.privateLock}
+                    source={this.state.dark ? lock_d_logo : lock_logo}
+                  />
+                )}
 
-              <Text
-                style={{
-                  margin: 2,
-                  marginTop: 10,
-                  marginHorizontal: 10,
-                  textAlign: 'right',
-                  fontSize: 12,
-                  color: this.state.dark ? 'white' : 'black',
-                }}>
-                {this.state.brand && 'Blab for IG'}
-              </Text>
-            </View>
-          </ViewShot>
+                <Image
+                  style={{
+                    height: this.props.post_data.height * this.state.sizeF,
+                    width: this.props.post_data.width * this.state.sizeF,
+                    resizeMode: 'contain',
+                    marginTop: 45,
+                  }}
+                  source={{
+                    uri: this.props.post_data.img_url
+                      ? this.props.post_data.img_url
+                      : 'data:',
+                  }}
+                  onLoad={this.onImageLoad}
+                />
+
+                <Text
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    margin: 5,
+                    marginLeft: 10,
+                    fontSize: 14,
+                    color: this.state.dark ? 'white' : 'black',
+                  }}>
+                  {this.props.post_data.video_view_count
+                    ? this.formatVnC(
+                        this.props.post_data.video_view_count,
+                        this.props.post_data.comments_count,
+                      )
+                    : this.formatLnC(
+                        this.props.post_data.likes_count,
+                        this.props.post_data.comments_count,
+                      )}
+                </Text>
+
+                <Text
+                  style={{
+                    margin: 2,
+                    marginTop: 10,
+                    marginHorizontal: 10,
+                    textAlign: 'right',
+                    fontSize: 12,
+                    color: this.state.dark ? 'white' : 'black',
+                  }}>
+                  {this.state.brand && 'Blab for IG'}
+                </Text>
+              </ViewShot>
+            </ScrollView>
+          </View>
         </>
       );
     }

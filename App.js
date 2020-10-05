@@ -3,8 +3,8 @@ import {Linking, AppRegistry} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 
-import ShareScreen from './components/pages/ShareScreen';
 import HomeScreen from './components/pages/HomeScreen';
+import ShareScreen from './components/pages/ShareScreen';
 import LoginScreen from './components/pages/LoginScreen';
 import ViewScreen from './components/pages/ViewScreen';
 import BlabScreen from './components/pages/BlabScreen';
@@ -19,6 +19,7 @@ const App: () => React$Node = ({navigation}) => {
           name="HomeScreen"
           component={HomeScreen}
           options={{title: 'Blab for IG', headerShown: false}}
+          initialParams={{load: true}}
         />
         <Stack.Screen
           name="ViewScreen"

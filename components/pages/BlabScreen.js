@@ -13,6 +13,7 @@ import Video from 'react-native-video';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import ShareTray from '../ShareTray';
+import ThemedModal from '../ThemedModal';
 
 const ViewScreen = ({route, navigation}) => {
   const {height, width} = Dimensions.get('window');
@@ -23,6 +24,12 @@ const ViewScreen = ({route, navigation}) => {
   });
   const [loading, setLoading] = useState(true);
   const [bid, setBID] = useState('');
+  const [modal_data, setModalData] = useState({
+    visible: false,
+    heading: null,
+    text: null,
+    buttons: [],
+  });
 
   useEffect(() => {
     var bid = getBID(route.params.blab_url);
@@ -30,9 +37,38 @@ const ViewScreen = ({route, navigation}) => {
       .then((res) => res.json())
       .then((res) => {
         console.log(res);
-        setpost_data({...res.data});
-        setLoading(false);
-      });
+        if (res.state === 1) {
+          setpost_data({...res.data});
+          setLoading(false);
+        } else {
+          setModalData({
+            visible: true,
+            heading: 'Error Occured',
+            text: "Either this post has expired or you're here by mistake.",
+            buttons: [
+              {
+                text: 'OK',
+                action: () => {
+                  setModalData({visible: false});
+                  navigation.navigate('HomeScreen');
+                },
+              },
+            ],
+          });
+        }
+      })
+      .catch((err) =>
+        setModalData({
+          visible: true,
+          heading: 'Error Occured',
+          text:
+            'Could not connect to the server. Check your internet connection and try again.',
+          action: () => {
+            setModalData({visible: false});
+            navigation.navigate('HomeScreen');
+          },
+        }),
+      );
   }, []);
 
   const getBID = (burl) => {
@@ -125,162 +161,170 @@ const ViewScreen = ({route, navigation}) => {
   };
 
   return (
-    <ScrollView style={{backgroundColor: '#121212'}}>
-      {loading && (
-        <View
-          style={{
-            flex: 1,
-            height,
-            width,
-            backgroundColor: 'black',
-            justifyContent: 'center',
-          }}>
-          <ActivityIndicator style={{margin: 10}} size="large" color="#fff" />
-        </View>
-      )}
-      {!loading && (
-        <>
+    <>
+      <ThemedModal
+        visible={modal_data.visible}
+        heading={modal_data.heading}
+        text={modal_data.text}
+        buttons={modal_data.buttons}
+      />
+      <ScrollView style={{backgroundColor: '#151515'}}>
+        {loading && (
           <View
             style={{
-              backgroundColor: '#121212',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
+              flex: 1,
+              height,
+              width,
+              backgroundColor: 'black',
+              justifyContent: 'center',
             }}>
+            <ActivityIndicator style={{margin: 10}} size="large" color="#fff" />
+          </View>
+        )}
+        {!loading && (
+          <>
             <View
-              style={{flexDirection: 'row'}}
-              onPress={() => {
-                Linking.openURL(
-                  'instagram://user?username=' + post_data.username,
-                );
+              style={{
+                backgroundColor: '#151515',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
               }}>
-              <Image
-                style={{
-                  height: 30,
-                  width: 30,
-                  borderRadius: 15,
-                  margin: 15,
-                  marginLeft: 25,
-                }}
-                source={{uri: post_data.pp_url}}
-              />
+              <View
+                style={{flexDirection: 'row'}}
+                onPress={() => {
+                  Linking.openURL(
+                    'instagram://user?username=' + post_data.username,
+                  );
+                }}>
+                <Image
+                  style={{
+                    height: 30,
+                    width: 30,
+                    borderRadius: 15,
+                    margin: 15,
+                    marginLeft: 25,
+                  }}
+                  source={{uri: post_data.pp_url}}
+                />
+                <Text
+                  style={{
+                    fontWeight: '200',
+                    textAlignVertical: 'center',
+                    color: 'white',
+                    fontSize: 18,
+                  }}>
+                  {post_data.username.length > 16
+                    ? post_data.username.substring(0, 16) + '...'
+                    : post_data.username}
+                </Text>
+              </View>
+              <View>
+                {post_data.is_private && (
+                  <Text
+                    style={{
+                      backgroundColor: '#353535',
+                      color: 'white',
+                      borderRadius: 5,
+                      margin: 20,
+                      marginRight: 35,
+                      paddingHorizontal: 5,
+                      paddingVertical: 2,
+                    }}>
+                    Private
+                  </Text>
+                )}
+              </View>
+            </View>
+            <View style={{backgroundColor: 'black'}}>
+              {returnMedia(post_data.media_url)}
+            </View>
+            <View style={{backgroundColor: '#151515'}}>
               <Text
                 style={{
-                  fontWeight: '200',
-                  textAlignVertical: 'center',
                   color: 'white',
-                  fontSize: 18,
+                  fontWeight: 'bold',
+                  fontSize: 16,
+                  margin: 10,
+                  marginHorizontal: 25,
                 }}>
-                {post_data.username.length > 16
-                  ? post_data.username.substring(0, 16) + '...'
-                  : post_data.username}
+                {returnStats()}
+              </Text>
+              <View
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'flex-start',
+                }}>
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  style={{
+                    height: 30,
+                    width: 120,
+                    borderRadius: 8,
+                    backgroundColor: 'white',
+                    margin: 10,
+                    marginLeft: 20,
+                  }}
+                  onPress={onShare}>
+                  <Text
+                    style={{
+                      color: 'black',
+                      fontSize: 15,
+                      alignSelf: 'center',
+                      textAlignVertical: 'center',
+                      flex: 1,
+                    }}>
+                    <Icon
+                      name="link-outline"
+                      style={{color: 'black', fontSize: 15}}
+                    />{' '}
+                    Share Link
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  style={{
+                    height: 30,
+                    width: 100,
+                    borderRadius: 8,
+                    backgroundColor: 'white',
+                    margin: 10,
+                  }}
+                  onPress={() => {
+                    navigation.navigate('ShareScreen', {
+                      valid_url: post_data.post_url,
+                    });
+                  }}>
+                  <Text
+                    style={{
+                      color: 'black',
+                      fontSize: 15,
+                      alignSelf: 'center',
+                      textAlignVertical: 'center',
+                      flex: 1,
+                    }}>
+                    <Icon
+                      name="arrow-redo-outline"
+                      style={{color: 'black', fontSize: 15}}
+                    />{' '}
+                    Re-Blab
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <Text
+                style={{
+                  color: 'white',
+                  backgroundColor: '#151515',
+                  padding: 20,
+                }}>
+                {post_data.caption}
               </Text>
             </View>
-            <View>
-              {post_data.is_private && (
-                <Text
-                  style={{
-                    backgroundColor: '#353535',
-                    color: 'white',
-                    borderRadius: 5,
-                    margin: 20,
-                    marginRight: 35,
-                    paddingHorizontal: 5,
-                    paddingVertical: 2,
-                  }}>
-                  Private
-                </Text>
-              )}
-            </View>
-          </View>
-          <View style={{backgroundColor: 'black'}}>
-            {returnMedia(post_data.media_url)}
-          </View>
-          <View style={{backgroundColor: '#121212'}}>
-            <Text
-              style={{
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: 16,
-                margin: 10,
-                marginHorizontal: 25,
-              }}>
-              {returnStats()}
-            </Text>
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'flex-start',
-              }}>
-              <TouchableOpacity
-                activeOpacity={0.9}
-                style={{
-                  height: 30,
-                  width: 120,
-                  borderRadius: 8,
-                  backgroundColor: 'white',
-                  margin: 10,
-                  marginLeft: 20,
-                }}
-                onPress={onShare}>
-                <Text
-                  style={{
-                    color: 'black',
-                    fontSize: 15,
-                    alignSelf: 'center',
-                    textAlignVertical: 'center',
-                    flex: 1,
-                  }}>
-                  <Icon
-                    name="link-outline"
-                    style={{color: 'black', fontSize: 15}}
-                  />{' '}
-                  Share Link
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                activeOpacity={0.9}
-                style={{
-                  height: 30,
-                  width: 100,
-                  borderRadius: 8,
-                  backgroundColor: 'white',
-                  margin: 10,
-                }}
-                onPress={() => {
-                  navigation.navigate('ShareScreen', {
-                    valid_url: post_data.post_url,
-                  });
-                }}>
-                <Text
-                  style={{
-                    color: 'black',
-                    fontSize: 15,
-                    alignSelf: 'center',
-                    textAlignVertical: 'center',
-                    flex: 1,
-                  }}>
-                  <Icon
-                    name="arrow-redo-outline"
-                    style={{color: 'black', fontSize: 15}}
-                  />{' '}
-                  Re-Blab
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <Text
-              style={{
-                color: 'white',
-                backgroundColor: '#121212',
-                padding: 20,
-              }}>
-              {post_data.caption}
-            </Text>
-          </View>
-        </>
-      )}
-    </ScrollView>
+          </>
+        )}
+      </ScrollView>
+    </>
   );
 };
 

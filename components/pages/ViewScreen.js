@@ -14,10 +14,14 @@ import RNFetchBlob from 'rn-fetch-blob';
 import Clipboard from '@react-native-community/clipboard';
 
 import {Scripts} from '../scripts';
+import * as Constants from '../constants';
 import PostPreview from '../PostPreview';
 import ShareTray from '../ShareTray';
+import ThemedModal from '../ThemedModal';
 
 const ShareScreen = ({route, navigation}) => {
+  var mounted = true;
+
   const abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
 
   var {post_url} = route.params;
@@ -50,11 +54,23 @@ const ShareScreen = ({route, navigation}) => {
   const [saved_mime, setSavedMime] = useState();
 
   const [share_modal_open, setShareModalOpen] = useState(true);
+  const [modal_data, setModalData] = useState({
+    visible: false,
+    heading: null,
+    text: null,
+    buttons: [],
+  });
 
   useEffect(() => {
-    post_url = validateURL(post_url);
-    console.log(post_url);
-    if (!post_url) displayError();
+    if (mounted) {
+      post_url = validateURL(post_url);
+      console.log(post_url);
+      if (!post_url) displayError();
+    }
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handlePressSUB = () => {
@@ -72,10 +88,46 @@ const ShareScreen = ({route, navigation}) => {
     fetch('https://blab-server.herokuapp.com/api/v1/newpost', requestOptions)
       .then((response) => response.json())
       .then((data) => {
-        console.log('Generate Link: ' + data);
-        setBlabUrl(data.data);
-        setIsShared(true);
-        setIsShareLoading(false);
+        console.log('Generate Link: ' + JSON.stringify(data));
+        if (mounted) {
+          if (data.state === 1) {
+            console.log('==========share success');
+            setBlabUrl(data.data);
+            setIsShared(true);
+            setIsShareLoading(false);
+          } else {
+            console.log('==========share failure');
+            setIsShared(false);
+            setIsShareLoading(false);
+            setModalData({
+              visible: true,
+              heading: 'Error Occured',
+              text:
+                'Could not connect to the server. Check your internet connection and try again.',
+              buttons: [
+                {
+                  text: 'OK',
+                  action: () => {
+                    setModalData({visible: false});
+                  },
+                },
+              ],
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        setModalData({
+          visible: true,
+          heading: 'Error Occured',
+          text:
+            'Could not connect to the server. Check your internet connection and try again.',
+          action: () => {
+            setModalData({visible: false});
+            navigation.navigate('HomeScreen');
+          },
+        });
       });
   };
 
@@ -85,7 +137,7 @@ const ShareScreen = ({route, navigation}) => {
 
     let ext = data.media_url.indexOf('.jpg') > -1 ? '.jpg' : '.mp4';
     RNFetchBlob.config({
-      path: abs_ext_path + 'filename' + ext,
+      path: abs_ext_path + 'source' + ext,
       fileCache: true,
     })
       .fetch('GET', data.media_url, {
@@ -96,16 +148,29 @@ const ShareScreen = ({route, navigation}) => {
         setSaveProgress(received / total);
       })
       .then((res) => {
-        setSaveProgress(1);
-        setIsSaved(true);
-        setSavedLocation('file://' + abs_ext_path + 'filename' + ext);
-        setSavedMime(ext === '.mp4' ? 'video/mp4' : 'image/jpg');
-        ToastAndroid.showWithGravity(
-          'Media saved.',
-          ToastAndroid.SHORT,
-          ToastAndroid.BOTTOM,
-        );
-      });
+        if (mounted) {
+          setSaveProgress(1);
+          setIsSaved(true);
+          setSavedLocation('file://' + abs_ext_path + 'source' + ext);
+          setSavedMime(ext === '.mp4' ? 'video/mp4' : 'image/jpg');
+          ToastAndroid.showWithGravity(
+            'Media saved.',
+            ToastAndroid.SHORT,
+            ToastAndroid.BOTTOM,
+          );
+        }
+      })
+      .catch((err) =>
+        setModalData({
+          visible: true,
+          heading: 'Error Occured',
+          text: 'Could not save the media. Check your internet connection.',
+          action: () => {
+            setModalData({visible: false});
+            navigation.navigate('HomeScreen');
+          },
+        }),
+      );
   };
 
   const dummyDownload = new Promise((resolve, reject) => {
@@ -161,7 +226,7 @@ const ShareScreen = ({route, navigation}) => {
       );
 
       await ShareC.open({
-        url: 'file://' + abs_ext_path + '.cache/filename.png',
+        url: 'file://' + abs_ext_path + '.cache/sticker.png',
         type: 'image/jpeg',
       }).catch((err) => {
         console.log(err);
@@ -204,9 +269,9 @@ const ShareScreen = ({route, navigation}) => {
           : {
               method: ShareC.InstagramStories.SHARE_STICKER_IMAGE,
               stickerImage:
-                'file://' + abs_ext_path + '.cache/' + 'filename.png',
-              backgroundBottomColor: '#fefefe',
-              backgroundTopColor: '#000',
+                'file://' + abs_ext_path + '.cache/' + 'sticker.png',
+              backgroundBottomColor: Constants.PRIMARY_COLOR,
+              backgroundTopColor: Constants.SECONDARY_COLOR,
               social: ShareC.Social.INSTAGRAM_STORIES,
             };
 
@@ -233,10 +298,8 @@ const ShareScreen = ({route, navigation}) => {
       console.log('is_video: ', is_video);
 
       if (!is_saved) {
-        // if (is_video && !is_saved) {
         await downloadInitiate();
       } else {
-        // let is_video = data.video_view_count ? true : false;
         let options = is_video
           ? {
               social: ShareC.Social.INSTAGRAM,
@@ -244,7 +307,7 @@ const ShareScreen = ({route, navigation}) => {
               forceDialog: true,
             }
           : {
-              url: 'file://' + abs_ext_path + 'filename.jpg',
+              url: 'file://' + abs_ext_path + 'source.jpg',
               social: ShareC.Social.INSTAGRAM,
               forceDialog: true,
             };
@@ -328,6 +391,12 @@ const ShareScreen = ({route, navigation}) => {
 
   return (
     <>
+      <ThemedModal
+        visible={modal_data.visible}
+        heading={modal_data.heading}
+        text={modal_data.text}
+        buttons={modal_data.buttons}
+      />
       <View style={{flex: 0}}>
         <WebView
           source={{uri: urlToJSON(post_url)}}
@@ -338,13 +407,15 @@ const ShareScreen = ({route, navigation}) => {
         />
       </View>
 
-      <View style={{flex: 5}}>
-        <View style={{flex: 1, backgroundColor: '#444'}}>
+      <View style={{flex: 1}}>
+        <View style={{flex: 1, backgroundColor: '#454545'}}>
           <PostPreview loading={loading} post_data={data} cache={false} />
         </View>
       </View>
 
-      <View style={{flex: 2, backgroundColor: 'black'}}>
+      {/* <View style={{flex: 2, backgroundColor: 'black'}}> */}
+      {/* <View style={{backgroundColor: 'black', height: 200}}> */}
+      <View style={{backgroundColor: 'black', height: 200}}>
         <ShareTray
           loading={loading}
           data={data}
@@ -369,15 +440,6 @@ const ShareScreen = ({route, navigation}) => {
 export default ShareScreen;
 
 //Linking.openURL(post_url);
-
-// <Modal visible={share_modal_open} transparent={true}>
-//   <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.3)' }} onPress={() => { setShareModalOpen(!share_modal_open) }}>
-//     <View flex={5} flexDirection='column' justifyContent='flex-end'>
-//       <TouchableOpacity style={{ height: 50, width: 150, borderRadius: 10, backgroundColor: 'white', alignSelf: 'center' }}
-//         onPress={() => { Alert.alert(":|") }}></TouchableOpacity>
-//     </View><View flex={2}></View>
-//   </TouchableOpacity>
-// </Modal>
 
 /* Generate Link, Copy Link, Share Link*/
 /* Share Image, Download Media */

@@ -5,7 +5,9 @@ import {StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
-const GuestDetails = ({blab_count, navigation}) => {
+import * as Constants from './constants';
+
+const GuestDetails = ({isWVLoading, blab_count, navigation}) => {
   return (
     <>
       <View
@@ -18,7 +20,7 @@ const GuestDetails = ({blab_count, navigation}) => {
           style={{
             margin: 10,
             marginTop: 20,
-            borderColor: '#777',
+            borderColor: Constants.DIS_PRIMARY_COLOR,
             borderWidth: 2,
             borderStyle: 'dashed',
             borderRadius: 15,
@@ -31,7 +33,7 @@ const GuestDetails = ({blab_count, navigation}) => {
               margin: 15,
               marginBottom: 10,
             }}>
-            Wanna share Private posts?
+            Want to share Private posts?
           </Text>
           <Text
             style={{
@@ -45,26 +47,54 @@ const GuestDetails = ({blab_count, navigation}) => {
           </Text>
           <View
             style={{
+              flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
               marginVertical: 20,
             }}>
-            {/* <Button
-              title="Login using Instagram"
-              style={{width: 50, margin: 'auto'}}
-              onPress={() => {
-                navigation.navigate('LoginScreen');
-              }}
-            /> */}
             <Icon.Button
+              disabled={isWVLoading}
               name="logo-instagram"
-              backgroundColor="#2196F3"
+              backgroundColor={isWVLoading ? '#555' : '#2196F3'}
               marginHorizontal={10}
               onPress={() => {
                 navigation.navigate('LoginScreen');
               }}>
-              <Text style={{color: 'white'}}> Connect Instagram</Text>
+              <Text style={{color: 'white'}}>
+                {isWVLoading
+                  ? '          Loading          '
+                  : 'Connect Instagram'}
+              </Text>
             </Icon.Button>
+          </View>
+          <View
+            style={{flex: 1, flexDirection: 'row', justifyContent: 'flex-end'}}>
+            <View
+              style={{
+                height: 32,
+                width: 32,
+                borderRadius: 25,
+                borderTopEndRadius: 0,
+                borderTopStartRadius: 0,
+                marginHorizontal: 10,
+                borderWidth: 2,
+                borderColor: Constants.DIS_PRIMARY_COLOR,
+              }}
+              onPress={() => {}}>
+              <Icon
+                name="help-outline"
+                style={{
+                  flex: 1,
+                  fontSize: 18,
+                  color: 'white',
+                  alignSelf: 'center',
+                  textAlignVertical: 'center',
+                }}
+                onPress={() => {
+                  navigation.navigate('LoginScreen');
+                }}
+              />
+            </View>
           </View>
         </View>
 

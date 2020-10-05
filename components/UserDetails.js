@@ -5,6 +5,8 @@ import {StyleSheet} from 'react-native';
 import verified_badge from '../public/assets/img/vbadge.png';
 import private_badge from '../public/assets/img/pbadge.png';
 
+import * as Constants from './constants';
+
 const UserDetails = ({blab_count, ig_details, onLogout}) => {
   console.log(ig_details);
 
@@ -55,10 +57,24 @@ const UserDetails = ({blab_count, ig_details, onLogout}) => {
               justifyContent: 'space-between',
             }}>
             {/* Profile Details */}
-            <Image
-              style={Styles.displayPic}
-              source={{uri: ig_details.pp_url}}
-            />
+            <View
+              style={{
+                ...Styles.displayPic,
+                padding: 0,
+                borderColor: Constants.PRIMARY_COLOR,
+                marginTop: 10,
+                height: 100,
+                width: 100,
+                borderRadius: 55,
+              }}>
+              <Image
+                style={{
+                  ...Styles.displayPic,
+                  borderColor: 'black',
+                }}
+                source={{uri: ig_details.pp_url}}
+              />
+            </View>
             <View
               style={{
                 flex: 1,
@@ -139,10 +155,13 @@ const Styles = StyleSheet.create({
     height: 90,
     width: 90,
     borderRadius: 45,
+    borderWidth: 3,
+    padding: 20,
     resizeMode: 'contain',
     margin: 'auto',
-    marginTop: 10,
+    marginTop: 2,
     alignSelf: 'center',
+    resizeMode: 'cover',
   },
   statNum: {
     fontSize: 18,
@@ -151,10 +170,10 @@ const Styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   logoutButton: {
-    backgroundColor: '#2196F3',
-    height: 30,
+    backgroundColor: '#303030',
+    height: 32,
     borderRadius: 3,
-    padding: 5,
+    padding: 7,
     paddingHorizontal: 10,
   },
 });

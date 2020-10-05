@@ -71,6 +71,11 @@ const LoginScreen = ({route, navigation}) => {
                   style={Styles.touchButton}
                   onPress={() => {
                     navigation.navigate('HomeScreen', {load: true});
+                    // navigation.navigate(
+                    //   'HomeScreen',
+                    //   {load: true},
+                    //   {key: Math.random() * 10000},
+                    // );
                   }}>
                   <Text style={Styles.buttonText}>
                     <Icon name="arrow-left" style={Styles.buttonText} /> {'  '}

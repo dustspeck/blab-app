@@ -1,0 +1,11 @@
+export const PRIMARY_COLOR = '#2296f3';
+export const SECONDARY_COLOR = '#01d3f8';
+export const DIS_PRIMARY_COLOR = '#7a7a7a';
+export const DIS_SECONDARY_COLOR = '#868686';
+export const GRAY_15 = '#151515';
+export const GRAY_20 = '#202020';
+export const GRAY_25 = '#252525';
+export const GRAY_30 = '#303030';
+export const GRAY_35 = '#353535';
+export const GRAY_40 = '#404040';
+export const GRAY_45 = '#454545';
