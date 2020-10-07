@@ -3,9 +3,9 @@ import {View, Text, TouchableOpacity, Dimensions, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import * as Constants from './constants';
+import * as Constants from '../constants';
 
-const image2 = require('../public/assets/img/steps.jpg');
+const image2 = require('../../public/assets/img/steps.jpg');
 
 const StepsPage = ({setIsFirstRun}) => {
   const {height, width} = Dimensions.get('window');

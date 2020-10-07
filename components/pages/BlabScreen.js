@@ -12,8 +12,8 @@ import {
 import Video from 'react-native-video';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import ShareTray from '../ShareTray';
-import ThemedModal from '../ThemedModal';
+import ShareTray from '../Share/ShareTray';
+import ThemedModal from '../Misc/ThemedModal';
 
 const ViewScreen = ({route, navigation}) => {
   const {height, width} = Dimensions.get('window');

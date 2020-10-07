@@ -15,13 +15,13 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import {Scripts} from '../scripts';
-import WelcomePage from '../WelcomePage';
-import UserDetails from '../UserDetails';
-import GuestDetails from '../GuestDetails';
-import UrlInput from '../UrlInput';
-import BlabbedList from '../BlabbedList';
-import AskPermissions from '../AskPermissions';
-import ThemedModal from '../ThemedModal';
+import WelcomePage from '../Welcome/WelcomePage';
+import UserDetails from '../Home/UserDetails';
+import GuestDetails from '../Home/GuestDetails';
+import UrlInput from '../Home/UrlInput';
+import BlabbedList from '../Home/BlabbedList';
+import AskPermissions from '../Home/AskPermissions';
+import ThemedModal from '../Misc/ThemedModal';
 
 const HomeScreen = ({navigation, shared_data, route}) => {
   //constants

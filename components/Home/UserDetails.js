@@ -2,10 +2,10 @@ import React from 'react';
 import {View, Text, Image, Button, TouchableOpacity} from 'react-native';
 import {StyleSheet} from 'react-native';
 
-import verified_badge from '../public/assets/img/vbadge.png';
-import private_badge from '../public/assets/img/pbadge.png';
+import verified_badge from '../../public/assets/img/vbadge.png';
+import private_badge from '../../public/assets/img/pbadge.png';
 
-import * as Constants from './constants';
+import * as Constants from '../constants';
 
 const UserDetails = ({blab_count, ig_details, onLogout}) => {
   console.log(ig_details);

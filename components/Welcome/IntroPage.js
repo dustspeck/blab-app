@@ -3,9 +3,9 @@ import {View, Text, TouchableOpacity, Dimensions, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import * as Constants from './constants';
+import * as Constants from '../constants';
 
-const image1 = require('../public/assets/img/splscr_img1.jpg');
+const image1 = require('../../public/assets/img/splscr_img1.jpg');
 
 const IntroPage = ({nextStage}) => {
   const {height, width} = Dimensions.get('window');

@@ -16,9 +16,9 @@ import Clipboard from '@react-native-community/clipboard';
 
 import {Scripts} from '../scripts';
 import * as Constants from '../constants';
-import PostPreview from '../PostPreview';
-import ShareTray from '../ShareTray';
-import ThemedModal from '../ThemedModal';
+import PostPreview from '../Share/PostPreview';
+import ShareTray from '../Share/ShareTray';
+import ThemedModal from '../Misc/ThemedModal';
 
 const ShareScreen = ({route, navigation}) => {
   var mounted = true;

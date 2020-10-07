@@ -5,7 +5,7 @@ import {StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
-import * as Constants from './constants';
+import * as Constants from '../constants';
 
 const GuestDetails = ({isWVLoading, blab_count, navigation}) => {
   return (

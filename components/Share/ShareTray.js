@@ -5,7 +5,7 @@ import Clipboard from '@react-native-community/clipboard';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 
-import * as Constants from './constants';
+import * as Constants from '../constants';
 
 const ShareTray = ({
   loading,

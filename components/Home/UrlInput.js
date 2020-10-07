@@ -13,7 +13,7 @@ import {Linking, Alert, StyleSheet, Dimensions} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import * as Constants from './constants';
+import * as Constants from '../constants';
 
 const UrlInput = ({navigation}) => {
   const TextBoxURL = createRef();
