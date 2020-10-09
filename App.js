@@ -3,11 +3,11 @@ import {Linking, AppRegistry} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 
-import HomeScreen from './components/pages/HomeScreen';
-import ShareScreen from './components/pages/ShareScreen';
-import LoginScreen from './components/pages/LoginScreen';
-import ViewScreen from './components/pages/ViewScreen';
-import BlabScreen from './components/pages/BlabScreen';
+import HomeScreen from './src/pages/HomeScreen';
+import ShareScreen from './src/pages/ShareScreen';
+import LoginScreen from './src/pages/LoginScreen';
+import ViewScreen from './src/pages/ViewScreen';
+import BlabScreen from './src/pages/BlabScreen';
 
 const Stack = createStackNavigator();
 

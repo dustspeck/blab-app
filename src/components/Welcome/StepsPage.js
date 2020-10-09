@@ -3,7 +3,7 @@ import {View, Text, TouchableOpacity, Dimensions, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import * as Constants from '../constants';
+import * as COLORS from '../../constants/colors';
 
 const image2 = require('../../public/assets/img/steps.jpg');
 
@@ -64,7 +64,7 @@ const StepsPage = ({setIsFirstRun}) => {
           <LinearGradient
             start={{x: 0.0, y: 0.0}}
             end={{x: 1.0, y: 1.0}}
-            colors={[Constants.PRIMARY_COLOR, Constants.SECONDARY_COLOR]}
+            colors={[COLORS.PRIMARY_COLOR, COLORS.SECONDARY_COLOR]}
             style={{
               width: 70,
               height: 70,
@@ -76,7 +76,7 @@ const StepsPage = ({setIsFirstRun}) => {
                 fontSize: 30,
                 alignSelf: 'center',
                 textAlignVertical: 'center',
-                color: Constants.PRIMARY_COLOR,
+                color: COLORS.PRIMARY_COLOR,
                 color: 'white',
               }}
               name={'arrow-forward-outline'}

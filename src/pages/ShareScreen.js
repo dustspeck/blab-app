@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {
   View,
+  Text,
   ToastAndroid,
   PermissionsAndroid,
   Share,
@@ -13,20 +14,18 @@ import ShareC from 'react-native-share';
 import RNFetchBlob from 'rn-fetch-blob';
 import Clipboard from '@react-native-community/clipboard';
 
-import {Scripts} from '../scripts';
-import * as Constants from '../constants';
-import PostPreview from '../Share/PostPreview';
-import ShareTray from '../Share/ShareTray';
-import ThemedModal from '../Misc/ThemedModal';
+import {Scripts} from '../constants/scripts';
+import * as COLORS from '../constants/colors';
+import PostPreview from '../components/Share/PostPreview';
+import ShareTray from '../components/Share/ShareTray';
+import ThemedModal from '../components/Misc/ThemedModal';
 
 const ShareScreen = ({route, navigation}) => {
   var mounted = true;
-
   const abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
 
-  var {post_url} = route.params;
-  console.log('PU:' + JSON.stringify(route.params));
-  //   var post_url = valid_url;
+  var {valid_url} = route.params;
+  var post_url = valid_url;
 
   const [data, setData] = useState({
     media_url: null,
@@ -53,7 +52,6 @@ const ShareScreen = ({route, navigation}) => {
   const [saved_location, setSavedLocation] = useState();
   const [saved_mime, setSavedMime] = useState();
 
-  const [share_modal_open, setShareModalOpen] = useState(true);
   const [modal_data, setModalData] = useState({
     visible: false,
     heading: null,
@@ -67,7 +65,6 @@ const ShareScreen = ({route, navigation}) => {
       console.log(post_url);
       if (!post_url) displayError();
     }
-
     return () => {
       mounted = false;
     };
@@ -116,8 +113,7 @@ const ShareScreen = ({route, navigation}) => {
           }
         }
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((err) =>
         setModalData({
           visible: true,
           heading: 'Error Occured',
@@ -127,8 +123,8 @@ const ShareScreen = ({route, navigation}) => {
             setModalData({visible: false});
             navigation.navigate('HomeScreen');
           },
-        });
-      });
+        }),
+      );
   };
 
   const downloadMedia = () => {
@@ -191,10 +187,15 @@ const ShareScreen = ({route, navigation}) => {
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         downloadMedia();
       } else {
-        Alert.alert(
-          'Permission Denied!',
-          'You need to give storage permission to download the file',
-        );
+        setModalData({
+          visible: true,
+          heading: 'Permission Denied!',
+          text: 'You need to give storage permission to download the file.',
+          action: () => {
+            setModalData({visible: false});
+            navigation.navigate('HomeScreen');
+          },
+        });
       }
     } catch (err) {
       console.warn(err);
@@ -270,8 +271,8 @@ const ShareScreen = ({route, navigation}) => {
               method: ShareC.InstagramStories.SHARE_STICKER_IMAGE,
               stickerImage:
                 'file://' + abs_ext_path + '.cache/' + 'sticker.png',
-              backgroundBottomColor: Constants.PRIMARY_COLOR,
-              backgroundTopColor: Constants.SECONDARY_COLOR,
+              backgroundBottomColor: COLORS.PRIMARY_COLOR,
+              backgroundTopColor: COLORS.SECONDARY_COLOR,
               social: ShareC.Social.INSTAGRAM_STORIES,
             };
 
@@ -298,8 +299,10 @@ const ShareScreen = ({route, navigation}) => {
       console.log('is_video: ', is_video);
 
       if (!is_saved) {
+        // if (is_video && !is_saved) {
         await downloadInitiate();
       } else {
+        // let is_video = data.video_view_count ? true : false;
         let options = is_video
           ? {
               social: ShareC.Social.INSTAGRAM,
@@ -362,18 +365,39 @@ const ShareScreen = ({route, navigation}) => {
   };
 
   const displayError = () => {
-    Alert.alert(
-      'Error Occured',
-      'Either the URL is invalid or you are not logged in.',
-      [
-        {text: 'Login', onPress: () => navigation.navigate('LoginScreen')},
+    // Alert.alert(
+    //   'Error Occured',
+    //   'Either the URL is invalid or you are not logged in.',
+    //   [
+    //     {text: 'Login', onPress: () => navigation.navigate('LoginScreen')},
+    //     {
+    //       text: 'OK',
+    //       onPress: () => navigation.navigate('HomeScreen'),
+    //     },
+    //   ],
+    //   {cancelable: false},
+    // );
+    setModalData({
+      visible: true,
+      heading: 'Error Occured!',
+      text: 'Either the URL is invalid or you are not connected to Instagram.',
+      buttons: [
+        {
+          text: 'LOGIN',
+          action: () => {
+            setModalData({...modal_data, visible: false});
+            navigation.navigate('LoginScreen');
+          },
+        },
         {
           text: 'OK',
-          onPress: () => navigation.navigate('HomeScreen'),
+          action: () => {
+            setModalData({...modal_data, visible: false});
+            navigation.navigate('HomeScreen');
+          },
         },
       ],
-      {cancelable: false},
-    );
+    });
   };
 
   const handleFetch = (fdata) => {
@@ -391,12 +415,6 @@ const ShareScreen = ({route, navigation}) => {
 
   return (
     <>
-      <ThemedModal
-        visible={modal_data.visible}
-        heading={modal_data.heading}
-        text={modal_data.text}
-        buttons={modal_data.buttons}
-      />
       <View style={{flex: 0}}>
         <WebView
           source={{uri: urlToJSON(post_url)}}
@@ -404,18 +422,35 @@ const ShareScreen = ({route, navigation}) => {
           onMessage={(event) => {
             handleFetch(event.nativeEvent.data);
           }}
+          onError={() => {
+            console.log('Connection Issue');
+            setModalData({
+              visible: true,
+              heading: 'Error Occured!',
+              text: 'Please check your internet connection.',
+              action: () => {
+                setModalData({visible: false});
+                navigation.navigate('HomeScreen');
+              },
+            });
+          }}
         />
       </View>
 
-      <View style={{flex: 1}}>
+      <ThemedModal
+        visible={modal_data.visible}
+        heading={modal_data.heading}
+        text={modal_data.text}
+        buttons={modal_data.buttons}
+      />
+
+      <View style={{flex: 5}}>
         <View style={{flex: 1, backgroundColor: '#454545'}}>
-          <PostPreview loading={loading} post_data={data} cache={false} />
+          <PostPreview loading={loading} post_data={data} cache={true} />
         </View>
       </View>
 
-      {/* <View style={{flex: 2, backgroundColor: 'black'}}> */}
-      {/* <View style={{backgroundColor: 'black', height: 200}}> */}
-      <View style={{backgroundColor: 'black', height: 200}}>
+      <View style={{flex: 2, backgroundColor: 'black'}}>
         <ShareTray
           loading={loading}
           data={data}
@@ -443,4 +478,4 @@ export default ShareScreen;
 
 /* Generate Link, Copy Link, Share Link*/
 /* Share Image, Download Media */
-/* Open Post, Remove watermark, Change BG color, Save Offline */
+/* Open Post, Remove watermark, Change BG color */

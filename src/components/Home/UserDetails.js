@@ -5,7 +5,7 @@ import {StyleSheet} from 'react-native';
 import verified_badge from '../../public/assets/img/vbadge.png';
 import private_badge from '../../public/assets/img/pbadge.png';
 
-import * as Constants from '../constants';
+import * as COLORS from '../../constants/colors';
 
 const UserDetails = ({blab_count, ig_details, onLogout}) => {
   console.log(ig_details);
@@ -61,7 +61,7 @@ const UserDetails = ({blab_count, ig_details, onLogout}) => {
               style={{
                 ...Styles.displayPic,
                 padding: 0,
-                borderColor: Constants.PRIMARY_COLOR,
+                borderColor: COLORS.PRIMARY_COLOR,
                 marginTop: 10,
                 height: 100,
                 width: 100,

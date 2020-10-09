@@ -5,7 +5,7 @@ import {StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
-import * as Constants from '../constants';
+import * as COLORS from '../../constants/colors';
 
 const GuestDetails = ({isWVLoading, blab_count, navigation}) => {
   return (
@@ -20,7 +20,7 @@ const GuestDetails = ({isWVLoading, blab_count, navigation}) => {
           style={{
             margin: 10,
             marginTop: 20,
-            borderColor: Constants.DIS_PRIMARY_COLOR,
+            borderColor: COLORS.DIS_PRIMARY_COLOR,
             borderWidth: 2,
             borderStyle: 'dashed',
             borderRadius: 15,
@@ -78,7 +78,7 @@ const GuestDetails = ({isWVLoading, blab_count, navigation}) => {
                 borderTopStartRadius: 0,
                 marginHorizontal: 10,
                 borderWidth: 2,
-                borderColor: Constants.DIS_PRIMARY_COLOR,
+                borderColor: COLORS.DIS_PRIMARY_COLOR,
               }}
               onPress={() => {}}>
               <Icon

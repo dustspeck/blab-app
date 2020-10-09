@@ -5,7 +5,7 @@ import Clipboard from '@react-native-community/clipboard';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 
-import * as Constants from '../constants';
+import * as COLORS from '../../constants/colors';
 
 const ShareTray = ({
   loading,
@@ -58,8 +58,8 @@ const ShareTray = ({
                           start={{x: 0.0, y: 0.0}}
                           end={{x: 1.0, y: 1.0}}
                           colors={[
-                            Constants.PRIMARY_COLOR,
-                            Constants.SECONDARY_COLOR,
+                            COLORS.PRIMARY_COLOR,
+                            COLORS.SECONDARY_COLOR,
                           ]}
                           // colors={['white', 'white']}
                           style={{
@@ -68,12 +68,12 @@ const ShareTray = ({
                             height: 70,
                             borderRadius: 35,
                             // borderWidth: 3,
-                            borderColor: Constants.PRIMARY_COLOR,
+                            borderColor: COLORS.PRIMARY_COLOR,
                           }}>
                           <Icon
                             style={{
                               ...Styles.iconStyle,
-                              color: Constants.PRIMARY_COLOR,
+                              color: COLORS.PRIMARY_COLOR,
                               color: 'white',
                             }}
                             // style={Styles.iconStyle}
@@ -99,13 +99,13 @@ const ShareTray = ({
                           <View
                             style={{
                               ...Styles.roundButton,
-                              borderColor: Constants.PRIMARY_COLOR,
+                              borderColor: COLORS.PRIMARY_COLOR,
                               borderWidth: 3,
                             }}>
                             <Icon
                               style={{
                                 ...Styles.iconStyle,
-                                color: Constants.PRIMARY_COLOR,
+                                color: COLORS.PRIMARY_COLOR,
                               }}
                               name="link-outline"
                             />
@@ -121,13 +121,13 @@ const ShareTray = ({
                           <View
                             style={{
                               ...Styles.roundButton,
-                              borderColor: Constants.PRIMARY_COLOR,
+                              borderColor: COLORS.PRIMARY_COLOR,
                               borderWidth: 3,
                             }}>
                             <Icon
                               style={{
                                 ...Styles.iconStyle,
-                                color: Constants.PRIMARY_COLOR,
+                                color: COLORS.PRIMARY_COLOR,
                               }}
                               name="copy-outline"
                             />

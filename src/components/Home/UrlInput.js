@@ -13,7 +13,7 @@ import {Linking, Alert, StyleSheet, Dimensions} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import * as Constants from '../constants';
+import * as COLORS from '../../constants/colors';
 
 const UrlInput = ({navigation}) => {
   const TextBoxURL = createRef();
@@ -72,7 +72,7 @@ const UrlInput = ({navigation}) => {
           ref={TextBoxURL}
           style={
             input_valid
-              ? {...Styles.textBox, borderColor: Constants.PRIMARY_COLOR}
+              ? {...Styles.textBox, borderColor: COLORS.PRIMARY_COLOR}
               : Styles.textBox
           }
           onChangeText={(post_url) => handleChange(post_url)}
@@ -89,8 +89,8 @@ const UrlInput = ({navigation}) => {
         <LinearGradient
           colors={
             input_valid
-              ? [Constants.PRIMARY_COLOR, Constants.SECONDARY_COLOR]
-              : [Constants.DIS_PRIMARY_COLOR, Constants.DIS_SECONDARY_COLOR]
+              ? [COLORS.PRIMARY_COLOR, COLORS.SECONDARY_COLOR]
+              : [COLORS.DIS_PRIMARY_COLOR, COLORS.DIS_SECONDARY_COLOR]
           }
           style={Styles.touchButton}>
           <TouchableOpacity
