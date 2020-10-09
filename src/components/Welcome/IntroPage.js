@@ -5,7 +5,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 import * as COLORS from '../../constants/colors';
 
-const image1 = require('../../public/assets/img/splscr_img1.jpg');
+const image1 = require('../../../public/assets/img/splscr_img1.jpg');
 
 const IntroPage = ({nextStage}) => {
   const {height, width} = Dimensions.get('window');

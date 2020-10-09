@@ -5,7 +5,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 import * as COLORS from '../../constants/colors';
 
-const image2 = require('../../public/assets/img/steps.jpg');
+const image2 = require('../../../public/assets/img/steps.jpg');
 
 const StepsPage = ({setIsFirstRun}) => {
   const {height, width} = Dimensions.get('window');

@@ -2,8 +2,8 @@ import React from 'react';
 import {View, Text, Image, Button, TouchableOpacity} from 'react-native';
 import {StyleSheet} from 'react-native';
 
-import verified_badge from '../../public/assets/img/vbadge.png';
-import private_badge from '../../public/assets/img/pbadge.png';
+import verified_badge from '../../../public/assets/img/vbadge.png';
+import private_badge from '../../../public/assets/img/pbadge.png';
 
 import * as COLORS from '../../constants/colors';
 

@@ -15,8 +15,8 @@ import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-community/async-storage';
 
-const lock_logo = require('../../public/assets/img/lock.jpg');
-const lock_d_logo = require('../../public/assets/img/lock_d.jpg');
+const lock_logo = require('../../../public/assets/img/lock.jpg');
+const lock_d_logo = require('../../../public/assets/img/lock_d.jpg');
 
 export class PostPreview extends Component {
   state = {

@@ -19,7 +19,7 @@ import {
 import * as RNFS from 'react-native-fs';
 import AsyncStorage from '@react-native-community/async-storage';
 
-const img_steps = require('../../public/assets/img/steps.jpg');
+const img_steps = require('../../../public/assets/img/steps.jpg');
 
 const BlabbedList = ({data, setData, navigation}) => {
   const {width, height} = Dimensions.get('window');

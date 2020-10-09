@@ -14,14 +14,14 @@ import ShareMenu from 'react-native-share-menu';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
 
-import {Scripts} from '../scripts';
-import WelcomePage from '../Welcome/WelcomePage';
-import UserDetails from '../Home/UserDetails';
-import GuestDetails from '../Home/GuestDetails';
-import UrlInput from '../Home/UrlInput';
-import BlabbedList from '../Home/BlabbedList';
-import AskPermissions from '../Home/AskPermissions';
-import ThemedModal from '../Misc/ThemedModal';
+import {Scripts} from '../constants/scripts';
+import WelcomePage from '../components/Welcome/WelcomePage';
+import UserDetails from '../components/Home/UserDetails';
+import GuestDetails from '../components/Home/GuestDetails';
+import UrlInput from '../components/Home/UrlInput';
+import BlabbedList from '../components/Home/BlabbedList';
+import AskPermissions from '../components/Home/AskPermissions';
+import ThemedModal from '../components/Misc/ThemedModal';
 
 const HomeScreen = ({navigation, shared_data, route}) => {
   //constants
