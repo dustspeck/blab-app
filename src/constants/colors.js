@@ -9,3 +9,5 @@ export const GRAY_30 = '#303030';
 export const GRAY_35 = '#353535';
 export const GRAY_40 = '#404040';
 export const GRAY_45 = '#454545';
+export const RED_15 = '#150000';
+export const RED_45 = '#450000';

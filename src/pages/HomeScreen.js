@@ -23,6 +23,9 @@ import BlabbedList from '../components/Home/BlabbedList';
 import AskPermissions from '../components/Home/AskPermissions';
 import ThemedModal from '../components/Misc/ThemedModal';
 
+import LoginStatus from '../components/Home/LoginStatus';
+import TopbarBranding from '../components/Misc/TopbarBranding';
+
 const HomeScreen = ({navigation, shared_data, route}) => {
   //constants
   const abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
@@ -232,7 +235,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   useEffect(() => {
     initializeConstants();
     connectData();
-    checkUpdates();
+    // checkUpdates();
   }, []);
 
   useEffect(() => {
@@ -289,6 +292,8 @@ const HomeScreen = ({navigation, shared_data, route}) => {
             }}
           />
         </View>
+        {/* <TopbarBranding /> */}
+        <LoginStatus />
 
         <View style={{backgroundColor: '#151515', flex: 0.6}}>
           {loading ? (
