@@ -13,6 +13,12 @@ import CookieManager from 'react-native-cookies';
 import ShareMenu from 'react-native-share-menu';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
+import admob, {
+  MaxAdContentRating,
+  BannerAd,
+  TestIds,
+  BannerAdSize,
+} from '@react-native-firebase/admob';
 
 import {Scripts} from '../constants/scripts';
 import WelcomePage from '../components/Welcome/WelcomePage';
@@ -239,6 +245,26 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   }, []);
 
   useEffect(() => {
+    console.log('==============admob effect');
+    admob()
+      .setRequestConfiguration({
+        // Update all future requests suitable for parental guidance
+        maxAdContentRating: MaxAdContentRating.PG,
+
+        // Indicates that you want your content treated as child-directed for purposes of COPPA.
+        tagForChildDirectedTreatment: true,
+
+        // Indicates that you want the ad request to be handled in a
+        // manner suitable for users under the age of consent.
+        tagForUnderAgeOfConsent: true,
+      })
+      .then(() => {
+        // Request config successfully set!
+        console.log('==============admob set');
+      });
+  }, []);
+
+  useEffect(() => {
     const unsubscribe = navigation.addListener('focus', connectData);
     return unsubscribe;
   }, [navigation]);
@@ -292,7 +318,10 @@ const HomeScreen = ({navigation, shared_data, route}) => {
             }}
           />
         </View>
-        {/* <TopbarBranding /> */}
+        <TopbarBranding />
+        {/* <View width={'100%'} height={50} backgroundColor="red">
+          <BannerAd size={BannerAdSize.SMART_BANNER} unitId={TestIds.BANNER} />
+        </View> */}
         <LoginStatus />
 
         <View style={{backgroundColor: '#151515', flex: 0.6}}>

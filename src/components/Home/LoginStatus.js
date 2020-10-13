@@ -19,7 +19,7 @@ const LoginStatus = ({isWVLoading, blab_count, navigation}) => {
         <View
           style={{
             padding: 15,
-            marginTop: 20,
+            // marginTop: 20,
             backgroundColor: COLORS.GRAY_25,
             borderRadius: 20,
             overflow: 'hidden',

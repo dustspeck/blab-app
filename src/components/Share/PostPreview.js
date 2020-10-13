@@ -14,6 +14,12 @@ import * as RNFS from 'react-native-fs';
 import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-community/async-storage';
+import admob, {
+  MaxAdContentRating,
+  BannerAd,
+  TestIds,
+  BannerAdSize,
+} from '@react-native-firebase/admob';
 
 const lock_logo = require('../../../public/assets/img/lock.jpg');
 const lock_d_logo = require('../../../public/assets/img/lock_d.jpg');
@@ -166,6 +172,12 @@ export class PostPreview extends Component {
     } else {
       return (
         <>
+          {/* <View width={'100%'} height={50} backgroundColor="red">
+            <BannerAd
+              size={BannerAdSize.SMART_BANNER}
+              unitId={TestIds.BANNER}
+            />
+          </View> */}
           <View
             style={{
               position: 'absolute',
