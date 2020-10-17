@@ -15,7 +15,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 import * as COLORS from '../../constants/colors';
 
-const UrlInput = ({navigation}) => {
+const UrlInputCard = ({navigation, isKeyboardShown}) => {
   const {height, width} = Dimensions.get('window');
   const TextBoxURL = createRef();
 
@@ -74,8 +74,7 @@ const UrlInput = ({navigation}) => {
 
   return (
     <>
-      {/* Card Style */}
-      {/* <View
+      <View
         style={{
           height: null,
           width,
@@ -85,66 +84,76 @@ const UrlInput = ({navigation}) => {
         <View
           style={{
             padding: 15,
+            paddingTop: 8,
             backgroundColor: COLORS.GRAY_25,
             borderRadius: 20,
             overflow: 'hidden',
-          }}> */}
-      {/* Card Style ^ */}
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignContent: 'stretch',
-        }}>
-        <TextInput
-          ref={TextBoxURL}
-          style={
-            input_valid
-              ? {...Styles.textBox, borderColor: COLORS.PRIMARY_COLOR}
-              : Styles.textBox
-          }
-          onChangeText={(post_url) => handleChange(post_url)}
-          onFocus={() => handleChange(post_url.toString())}
-          onSubmitEditing={handleSubmit}
-          placeholder="Enter Instagram post URL"
-          placeholderTextColor="#aaaaaa"
-          spellCheck={false}
-          autoCorrect={false}
-          autoCapitalize={'none'}
-          returnKeyType="done"
-          selectTextOnFocus={true}
-          // autoFocus={true}
-        />
-        <LinearGradient
-          colors={
-            input_valid
-              ? [COLORS.PRIMARY_COLOR, COLORS.SECONDARY_COLOR]
-              : [COLORS.DIS_PRIMARY_COLOR, COLORS.DIS_SECONDARY_COLOR]
-          }
-          style={Styles.touchButton}>
-          <TouchableOpacity
-            disabled={!input_valid}
-            style={{width: 50, height: 50}}
-            activeOpacity={0.8}
-            onPress={handleSubmit}>
-            <Icon
-              name="arrow-forward-outline"
-              solid
-              color="white"
-              size={24}
-              style={{
-                flex: 1,
-                alignSelf: 'center',
-                textAlignVertical: 'center',
-              }}
+          }}>
+          <Text
+            style={{
+              fontSize: 16,
+              color: '#666',
+              marginLeft: 16,
+              marginBottom: 4,
+            }}>
+            <Icon name="link" style={{fontSize: 16}} />
+            {'  Enter the Instagram post URL'}
+          </Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignContent: 'stretch',
+            }}>
+            <TextInput
+              ref={TextBoxURL}
+              style={
+                input_valid
+                  ? {...Styles.textBox, borderColor: COLORS.PRIMARY_COLOR}
+                  : Styles.textBox
+              }
+              onChangeText={(post_url) => handleChange(post_url)}
+              onFocus={() => handleChange(post_url.toString())}
+              onSubmitEditing={handleSubmit}
+              placeholder="https://www.instagram.com/p/XXXXXX"
+              placeholderTextColor="#aaaaaa"
+              spellCheck={false}
+              autoCorrect={false}
+              autoCapitalize={'none'}
+              returnKeyType="done"
+              selectTextOnFocus={true}
+              // autoFocus={true}
             />
-          </TouchableOpacity>
-        </LinearGradient>
+            {input_valid && (
+              <LinearGradient
+                colors={
+                  input_valid
+                    ? [COLORS.PRIMARY_COLOR, COLORS.SECONDARY_COLOR]
+                    : [COLORS.DIS_PRIMARY_COLOR, COLORS.DIS_SECONDARY_COLOR]
+                }
+                style={Styles.touchButton}>
+                <TouchableOpacity
+                  disabled={!input_valid}
+                  style={{width: 50, height: 50}}
+                  activeOpacity={0.8}
+                  onPress={handleSubmit}>
+                  <Icon
+                    name="arrow-forward-outline"
+                    solid
+                    color="white"
+                    size={24}
+                    style={{
+                      flex: 1,
+                      alignSelf: 'center',
+                      textAlignVertical: 'center',
+                    }}
+                  />
+                </TouchableOpacity>
+              </LinearGradient>
+            )}
+          </View>
+        </View>
       </View>
-      {/* Card Style */}
-      {/* </View>
-      </View> */}
-      {/* Card Style ^*/}
     </>
   );
 };
@@ -159,24 +168,21 @@ const Styles = StyleSheet.create({
     borderRadius: 25,
     height: 50,
     paddingHorizontal: 20,
-    margin: 16,
-    marginRight: 8,
+    margin: 4,
     marginRight: 4,
-    marginBottom: 26,
     alignSelf: 'stretch',
     borderWidth: 1,
-    backgroundColor: '#181818',
+    backgroundColor: 'rgba(30, 30, 30, 1)',
   },
   touchButton: {
     elevation: 2,
     borderWidth: 1,
-    borderRadius: 25,
+    borderRadius: Dimensions.get('window').width / 16,
     borderColor: '#2196F3',
-    width: 50,
-    height: 50,
-    margin: 16,
+    width: Dimensions.get('window').width / 8,
+    height: Dimensions.get('window').width / 8,
+    margin: 4,
     marginLeft: 2,
-    marginTop: 18,
     borderWidth: 0,
   },
   inputInfo: {
@@ -189,4 +195,4 @@ const Styles = StyleSheet.create({
   },
 });
 
-export default UrlInput;
+export default UrlInputCard;

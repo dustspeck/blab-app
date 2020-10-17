@@ -106,6 +106,7 @@ export class PostPreview extends Component {
             `.cache/${this.getPostIdentifier(this.props.post_data.post_url)}` +
             ext,
           post_url: this.props.post_data.post_url,
+          username: this.props.post_data.username,
         });
         await AsyncStorage.setItem('db_blabbed_history', JSON.stringify(pre));
         //

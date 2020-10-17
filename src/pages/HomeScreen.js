@@ -6,6 +6,9 @@ import {
   StyleSheet,
   Dimensions,
   PermissionsAndroid,
+  Keyboard,
+  ScrollView,
+  FlatList,
 } from 'react-native';
 import * as RNFS from 'react-native-fs';
 import WebView from 'react-native-webview';
@@ -13,12 +16,6 @@ import CookieManager from 'react-native-cookies';
 import ShareMenu from 'react-native-share-menu';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
-import admob, {
-  MaxAdContentRating,
-  BannerAd,
-  TestIds,
-  BannerAdSize,
-} from '@react-native-firebase/admob';
 
 import {Scripts} from '../constants/scripts';
 import WelcomePage from '../components/Welcome/WelcomePage';
@@ -28,23 +25,18 @@ import UrlInput from '../components/Home/UrlInput';
 import BlabbedList from '../components/Home/BlabbedList';
 import AskPermissions from '../components/Home/AskPermissions';
 import ThemedModal from '../components/Misc/ThemedModal';
+import UrlInputCard from '../components/Home/UrlInputCard';
+
+import * as COLORS from '../constants/colors';
 
 import LoginStatus from '../components/Home/LoginStatus';
 import TopbarBranding from '../components/Misc/TopbarBranding';
+import BlabbedCard from '../components/Home/BlabbedCard';
 
 const HomeScreen = ({navigation, shared_data, route}) => {
   //constants
   const abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
   const {width, height} = Dimensions.get('window');
-
-  //sample
-  const db_sample = {
-    data: [
-      {id: 1, thumbnail: abs_ext_path + 'filename.jpg'},
-      {id: 2, thumbnail: abs_ext_path + 'filename.jpg'},
-    ],
-  };
-  //
 
   //refs
   const LoginWebView = useRef();
@@ -72,6 +64,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     buttons: [],
   });
   const [isWVLoading, setIsWVLoading] = useState(false);
+  const [is_keyboard_shown, setIsKeyboardShown] = useState(false);
 
   //constants
   const initializeConstants = async () => {
@@ -128,17 +121,9 @@ const HomeScreen = ({navigation, shared_data, route}) => {
       let data = await AsyncStorage.getItem('db_blabbed_history');
       console.log('DB: ' + data);
       if (data) {
-        //sample
-        // await AsyncStorage.setItem(
-        //   'db_blabbed_history',
-        //   JSON.stringify(db_sample),
-        // );
-        //
         let history = await AsyncStorage.getItem('db_blabbed_history');
         history = JSON.parse(history);
-        // console.log('BL Sent:' + history);
         console.log('BL Sent:' + history.data);
-        // setBlabbedHistory(history);
         setBlabbedHistory(history.data);
       } else {
         setIsFirstRun(true);
@@ -217,10 +202,6 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     setLoading(false);
   };
 
-  // reloadWebview = () => {
-  //   LoginWebView.current.reload();
-  // };
-
   onLogout = async () => {
     LoginWebView.current.clearCache(true);
     const cc = await CookieManager.clearAll();
@@ -237,6 +218,14 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     LoginWebView.current.reload();
   };
 
+  const _keyboardDidShow = () => {
+    setIsKeyboardShown(true);
+  };
+
+  const _keyboardDidHide = () => {
+    setIsKeyboardShown(false);
+  };
+
   //useeffects
   useEffect(() => {
     initializeConstants();
@@ -245,23 +234,12 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   }, []);
 
   useEffect(() => {
-    console.log('==============admob effect');
-    admob()
-      .setRequestConfiguration({
-        // Update all future requests suitable for parental guidance
-        maxAdContentRating: MaxAdContentRating.PG,
-
-        // Indicates that you want your content treated as child-directed for purposes of COPPA.
-        tagForChildDirectedTreatment: true,
-
-        // Indicates that you want the ad request to be handled in a
-        // manner suitable for users under the age of consent.
-        tagForUnderAgeOfConsent: true,
-      })
-      .then(() => {
-        // Request config successfully set!
-        console.log('==============admob set');
-      });
+    Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
+    Keyboard.addListener('keyboardDidHide', _keyboardDidHide);
+    return () => {
+      Keyboard.removeListener('keyboardDidShow', _keyboardDidShow);
+      Keyboard.removeListener('keyboardDidHide', _keyboardDidHide);
+    };
   }, []);
 
   useEffect(() => {
@@ -299,8 +277,11 @@ const HomeScreen = ({navigation, shared_data, route}) => {
         text={modal_data.text}
         buttons={modal_data.buttons}
       />
-
-      <View style={{flex: 1, minHeight: height}}>
+      <ScrollView
+        stickyHeaderIndices={[1]}
+        // keyboardDismissMode="on-drag"
+        // keyboardShouldPersistTaps="handled"
+        endFillColor={COLORS.GRAY_15}>
         <View style={{flex: 0}}>
           <WebView
             ref={LoginWebView}
@@ -319,47 +300,79 @@ const HomeScreen = ({navigation, shared_data, route}) => {
           />
         </View>
         <TopbarBranding />
-        {/* <View width={'100%'} height={50} backgroundColor="red">
-          <BannerAd size={BannerAdSize.SMART_BANNER} unitId={TestIds.BANNER} />
-        </View> */}
         <LoginStatus />
-
-        <View style={{backgroundColor: '#151515', flex: 0.6}}>
-          {loading ? (
-            //data is loading
-            <ActivityIndicator style={{margin: 10}} size="large" color="#fff" />
-          ) : user_details.username === null ? (
-            //not logged in
-            <GuestDetails
-              isWVLoading={isWVLoading}
-              blab_count={blabbed_history ? blabbed_history.length : 0}
-              navigation={navigation}
-            />
-          ) : (
-            //logged in
-            <UserDetails
-              blab_count={blabbed_history ? blabbed_history.length : 0}
-              ig_details={{...user_details}}
-              onLogout={onLogout}
-            />
-          )}
-        </View>
-
         <View style={{backgroundColor: '#151515', flex: 1}}>
-          <UrlInput navigation={navigation} />
-          {has_permission || last_perm ? (
-            <BlabbedList
-              data={blabbed_history}
-              setData={handleSetData}
-              navigation={navigation}
-            />
-          ) : (
-            <AskPermissions onSuccess={onSuccess} />
-          )}
+          <UrlInputCard
+            navigation={navigation}
+            isKeyboardShown={is_keyboard_shown}
+          />
+          <BlabbedCard
+            data={blabbed_history}
+            setData={handleSetData}
+            navigation={navigation}
+          />
         </View>
-      </View>
+      </ScrollView>
     </>
   );
 };
 
 export default HomeScreen;
+
+/* <View style={{backgroundColor: '#151515', flex: 0.6}}>
+  {loading ? (
+    //data is loading
+    <ActivityIndicator style={{margin: 10}} size="large" color="#fff" />
+  ) : user_details.username === null ? (
+    //not logged in
+    <GuestDetails
+      isWVLoading={isWVLoading}
+      blab_count={blabbed_history ? blabbed_history.length : 0}
+      navigation={navigation}
+    />
+  ) : (
+    //logged in
+    <UserDetails
+      blab_count={blabbed_history ? blabbed_history.length : 0}
+      ig_details={{...user_details}}
+      onLogout={onLogout}
+    />
+  )}
+</View> */
+
+/* {has_permission || last_perm ? (
+  <BlabbedList
+    data={blabbed_history}
+    setData={handleSetData}
+    navigation={navigation}
+  />
+) : (
+  <AskPermissions onSuccess={onSuccess} />
+)} */
+
+// import admob, {
+//   MaxAdContentRating,
+//   BannerAd,
+//   TestIds,
+//   BannerAdSize,
+// } from '@react-native-firebase/admob';
+
+// useEffect(() => {
+//   console.log('==============admob effect');
+//   admob()
+//     .setRequestConfiguration({
+//       // Update all future requests suitable for parental guidance
+//       maxAdContentRating: MaxAdContentRating.PG,
+
+//       // Indicates that you want your content treated as child-directed for purposes of COPPA.
+//       tagForChildDirectedTreatment: true,
+
+//       // Indicates that you want the ad request to be handled in a
+//       // manner suitable for users under the age of consent.
+//       tagForUnderAgeOfConsent: true,
+//     })
+//     .then(() => {
+//       // Request config successfully set!
+//       console.log('==============admob set');
+//     });
+// }, []);

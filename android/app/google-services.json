@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "281019063181",
+    "firebase_url": "https://blab-for-ig.firebaseio.com",
+    "project_id": "blab-for-ig",
+    "storage_bucket": "blab-for-ig.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:281019063181:android:7040c2e802027acae6bbc4",
+        "android_client_info": {
+          "package_name": "com.blab"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "281019063181-0mc1uc5o7d0q42s4eocmge5s6fbcp8id.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.blab",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "281019063181-e645m0ba0lbtqvo94hmks3ud197bo41r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvIAIwC56u0VPtvq8BByVzoujwVhnF69I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "281019063181-e645m0ba0lbtqvo94hmks3ud197bo41r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
