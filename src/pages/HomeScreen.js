@@ -28,6 +28,9 @@ import ThemedModal from '../components/Misc/ThemedModal';
 import UrlInputCard from '../components/Home/UrlInputCard';
 
 import * as COLORS from '../constants/colors';
+import * as PATHS from '../constants/paths';
+import * as MODALS from '../constants/modals';
+import {validateURL, extractURL} from '../sharedMethods/URLInspector';
 
 import LoginStatus from '../components/Home/LoginStatus';
 import TopbarBranding from '../components/Misc/TopbarBranding';
@@ -35,7 +38,6 @@ import BlabbedCard from '../components/Home/BlabbedCard';
 
 const HomeScreen = ({navigation, shared_data, route}) => {
   //constants
-  const abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
   const {width, height} = Dimensions.get('window');
 
   //refs
@@ -70,9 +72,9 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   const initializeConstants = async () => {
     try {
       //path
-      let exists = await RNFS.exists(abs_ext_path + '/.cache');
+      let exists = await RNFS.exists(PATHS.ExternalCacheDir);
       if (!exists) {
-        RNFS.mkdir(abs_ext_path + '/.cache');
+        RNFS.mkdir(PATHS.ExternalCacheDir);
       }
       //permission
       let db_perm = await AsyncStorage.getItem('db_perm');
@@ -92,14 +94,13 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   //updates
   const checkUpdates = () => {
     setModalData({
+      ...MODALS.Update,
       visible: true,
-      heading: 'Update Available',
-      text: 'Nvm, just checking',
       buttons: [
         {
           text: 'UPDATE',
           action: () => {
-            setModalData({...modal_data, visible: false});
+            setModalData({visible: false});
           },
         },
       ],
@@ -146,45 +147,18 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     setHasPermission(result);
   };
 
-  //URL
-  const extractURL = (text) => {
-    let link = text.substr(
-      text.indexOf('https://www.instagram.com/p/') > -1
-        ? text.indexOf('https://www.instagram.com/p/')
-        : text.indexOf('https://www.instagram.com/reel/'),
-    );
-    link = link.substr(
-      0,
-      link.indexOf(' ') > -1 ? link.indexOf(' ') : link.length,
-    );
-    return link;
-  };
-
-  const validateURL = (url) => {
-    if (url) {
-      console.log('validateURL rec:' + url);
-      if (!url.startsWith('https://')) url = 'https://'.concat(url);
-      if (
-        !url.startsWith('https://www.instagram.com/p/') &&
-        !url.startsWith('https://www.instagram.com/reel/')
-      )
-        return false;
-      try {
-        let validate_url = new URL(url);
-        return url;
-      } catch (_) {
-        return false;
-      }
-    } else return false;
-  };
-
   const displayError = () => {
-    Alert.alert(
-      'Error Occured',
-      'Invalid URL',
-      [{text: 'OK', onPress: () => {}}],
-      {cancelable: false},
-    );
+    setModalData({
+      ...MODALS.InvalidURL,
+      buttons: [
+        {
+          text: 'OK',
+          action: () => {
+            setModalData({visible: false});
+          },
+        },
+      ],
+    });
   };
 
   //data
@@ -230,7 +204,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   useEffect(() => {
     initializeConstants();
     connectData();
-    // checkUpdates();
+    checkUpdates();
   }, []);
 
   useEffect(() => {
@@ -249,10 +223,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
 
   useEffect(() => {
     ShareMenu.getSharedText((text) => {
-      console.log('ShareMenu rec:' + text);
-      var post_url = extractURL(text);
-      var valid_url = validateURL(post_url);
-      console.log('validated:' + valid_url);
+      var valid_url = validateURL(extractURL(text));
       if (valid_url !== false) navigation.navigate('ShareScreen', {valid_url});
       else displayError();
     });
@@ -279,8 +250,8 @@ const HomeScreen = ({navigation, shared_data, route}) => {
       />
       <ScrollView
         stickyHeaderIndices={[1]}
-        // keyboardDismissMode="on-drag"
-        // keyboardShouldPersistTaps="handled"
+        removeClippedSubviews={false}
+        keyboardShouldPersistTaps="handled"
         endFillColor={COLORS.GRAY_15}>
         <View style={{flex: 0}}>
           <WebView
@@ -288,7 +259,6 @@ const HomeScreen = ({navigation, shared_data, route}) => {
             source={{uri: 'https://www.instagram.com/accounts/edit/?__a=1'}}
             injectedJavaScript={Scripts.fetchUserDetails__a}
             onMessage={(event) => {
-              console.log(event.nativeEvent.data);
               handleUserData(event.nativeEvent.data);
             }}
             onLoadStart={() => {

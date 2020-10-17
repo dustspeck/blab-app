@@ -21,6 +21,7 @@ const UrlInputCard = ({navigation, isKeyboardShown}) => {
 
   const [post_url, setpost_url] = useState('');
   const [input_valid, setInputValid] = useState(false);
+  const [editable, setEditable] = useState(false);
 
   const handleChange = (text) => {
     setpost_url(text);
@@ -72,6 +73,12 @@ const UrlInputCard = ({navigation, isKeyboardShown}) => {
     );
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      setEditable(true);
+    }, 10);
+  }, []);
+
   return (
     <>
       <View
@@ -106,6 +113,7 @@ const UrlInputCard = ({navigation, isKeyboardShown}) => {
               alignContent: 'stretch',
             }}>
             <TextInput
+              editable={editable}
               ref={TextBoxURL}
               style={
                 input_valid
