@@ -19,10 +19,6 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 import {Scripts} from '../constants/scripts';
 import WelcomePage from '../components/Welcome/WelcomePage';
-import UserDetails from '../components/Home/UserDetails';
-import GuestDetails from '../components/Home/GuestDetails';
-import UrlInput from '../components/Home/UrlInput';
-import BlabbedList from '../components/Home/BlabbedList';
 import AskPermissions from '../components/Home/AskPermissions';
 import ThemedModal from '../components/Misc/ThemedModal';
 import UrlInputCard from '../components/Home/UrlInputCard';
@@ -71,6 +67,10 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   //constants
   const initializeConstants = async () => {
     try {
+      let history = await AsyncStorage.getItem('user_data');
+      history = JSON.parse(history);
+      setUserDetails(history);
+
       //path
       let exists = await RNFS.exists(PATHS.ExternalCacheDir);
       if (!exists) {
@@ -124,7 +124,6 @@ const HomeScreen = ({navigation, shared_data, route}) => {
       if (data) {
         let history = await AsyncStorage.getItem('db_blabbed_history');
         history = JSON.parse(history);
-        console.log('BL Sent:' + history.data);
         setBlabbedHistory(history.data);
       } else {
         setIsFirstRun(true);
@@ -133,6 +132,20 @@ const HomeScreen = ({navigation, shared_data, route}) => {
           'db_blabbed_history',
           JSON.stringify(empty_data),
         );
+      }
+    } catch (e) {
+      console.log(e);
+    }
+
+    try {
+      let data = await AsyncStorage.getItem('user_data');
+      console.log('=============History: ' + data);
+      if (data) {
+        let history = await AsyncStorage.getItem('user_data');
+        history = JSON.parse(history);
+        setUserDetails(history);
+      } else {
+        await AsyncStorage.setItem('user_data', JSON.stringify(user_details));
       }
     } catch (e) {
       console.log(e);
@@ -170,8 +183,10 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     data = JSON.parse(data);
     if (data.success == true) {
       setUserDetails({...data.user_data});
+      AsyncStorage.setItem('user_data', JSON.stringify(data.user_data));
     } else {
       setUserDetails({username: null});
+      AsyncStorage.setItem('user_data', JSON.stringify(data.user_data));
     }
     setLoading(false);
   };
@@ -189,6 +204,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
       is_private: null,
       is_verified: null,
     });
+    AsyncStorage.setItem('user_data', JSON.stringify(data.user_data));
     LoginWebView.current.reload();
   };
 
@@ -204,7 +220,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   useEffect(() => {
     initializeConstants();
     connectData();
-    checkUpdates();
+    // checkUpdates();
   }, []);
 
   useEffect(() => {
@@ -270,7 +286,11 @@ const HomeScreen = ({navigation, shared_data, route}) => {
           />
         </View>
         <TopbarBranding />
-        <LoginStatus />
+        <LoginStatus
+          loading={loading}
+          user_details={user_details}
+          navigation={navigation}
+        />
         <View style={{backgroundColor: '#151515', flex: 1}}>
           <UrlInputCard
             navigation={navigation}

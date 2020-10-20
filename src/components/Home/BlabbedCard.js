@@ -99,7 +99,7 @@ const BlabbedCard = ({data, setData, navigation}) => {
               zIndex: 2,
             }}
             onPress={() => {
-              Alert.alert(':)');
+              navigation.navigate('Posts');
             }}>
             <View
               style={{
@@ -114,9 +114,9 @@ const BlabbedCard = ({data, setData, navigation}) => {
                 padding: 3,
                 paddingHorizontal: 8,
               }}>
-              <Text style={{color: '#bbb', fontSize: 15}}>
+              <Text style={{color: '#bbb', fontSize: 12}}>
                 VIEW ALL
-                <Icon name="chevron-forward" style={{fontSize: 15}} />
+                <Icon name="chevron-forward" style={{fontSize: 12}} />
               </Text>
             </View>
           </TouchableOpacity>

@@ -24,7 +24,9 @@ const BlabbedPreview = ({
       }}
       onLongPress={() => {
         setIsSelection(true);
-        setSelected([...selected, item.id]);
+        if (!selected.includes(item.id)) {
+          setSelected([...selected, item.id]);
+        }
         console.log(selected);
       }}
       style={({pressed}) => [{opacity: pressed ? 0.5 : 1}]}>

@@ -1,5 +1,6 @@
 import * as RNFS from 'react-native-fs';
 import AsyncStorage from '@react-native-community/async-storage';
+
 exports.removeElements = async (items) => {
   try {
     let newData = await AsyncStorage.getItem('db_blabbed_history');
@@ -9,12 +10,19 @@ exports.removeElements = async (items) => {
     items.forEach((delID) => {
       newData.splice(
         newData.findIndex((v) => {
-          r_pid = v.thumbnail;
+          if (v.id == delID) {
+            r_pid = v.thumbnail;
+          }
           return v.id == delID;
         }),
         1,
       );
-      RNFS.unlink(`${r_pid}`);
+      console.log(r_pid);
+      try {
+        RNFS.unlink(`${r_pid}`);
+      } catch (err) {
+        throw err;
+      }
     });
     await AsyncStorage.setItem(
       'db_blabbed_history',

@@ -12,12 +12,13 @@ import ShareScreen from './src/pages/ShareScreen';
 import LoginScreen from './src/pages/LoginScreen';
 import ViewScreen from './src/pages/ViewScreen';
 import BlabScreen from './src/pages/BlabScreen';
+import ProfileScreen from './src/pages/ProfileScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+const {width, height} = Dimensions.get('window');
 const HomeStackScreen = ({navigation}) => {
-  const {width, height} = Dimensions.get('window');
   return (
     <Stack.Navigator initialRouteName="HomeScreen">
       <Stack.Screen
@@ -26,65 +27,76 @@ const HomeStackScreen = ({navigation}) => {
         options={{title: 'Blab for IG', headerShown: false}}
         initialParams={{load: true}}
       />
-      <Stack.Screen
-        name="ViewScreen"
-        component={ViewScreen}
-        options={{title: 'Blab for IG'}}
-      />
-      <Stack.Screen
-        name="ShareScreen"
-        component={ShareScreen}
-        options={{
-          title: 'Share',
-        }}
-      />
-      <Stack.Screen
-        name="LoginScreen"
-        component={LoginScreen}
-        options={{title: 'Instagram', headerShown: false}}
-      />
-      <Stack.Screen
-        name="BlabScreen"
-        component={BlabScreen}
-        options={{title: 'Blab for IG'}}
-      />
     </Stack.Navigator>
   );
 };
 
+const MainScreen = ({navigation}) => {
+  return (
+    <Tab.Navigator
+      screenOptions={({route}) => ({
+        tabBarIcon: ({focused, color, size}) => {
+          let iconName;
+          if (route.name === 'Home') {
+            iconName = 'home-sharp';
+          } else if (route.name === 'Posts') {
+            iconName = 'grid';
+          } else if (route.name === 'Account') {
+            iconName = 'person-sharp';
+          }
+          return <Icon name={iconName} size={size} color={color} />;
+        },
+      })}
+      tabBarOptions={{
+        activeTintColor: COLORS.PRIMARY_COLOR,
+        inactiveTintColor: 'gray',
+        keyboardHidesTabBar: true,
+        showLabel: false,
+        style: {
+          backgroundColor: 'rgba(30, 30, 30, 1)',
+          height: height / 12,
+          borderTopWidth: 0,
+        },
+      }}>
+      <Tab.Screen name="Home" component={HomeStackScreen} />
+      <Tab.Screen name="Posts" component={BlabbedScreen} />
+      <Tab.Screen name="Account" component={ProfileScreen} />
+    </Tab.Navigator>
+  );
+};
+
 const App: () => React$Node = ({navigation}) => {
-  const {width, height} = Dimensions.get('window');
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={({route}) => ({
-          tabBarIcon: ({focused, color, size}) => {
-            let iconName;
-            if (route.name === 'Home') {
-              iconName = 'home-sharp';
-            } else if (route.name === 'Posts') {
-              iconName = 'grid';
-            } else if (route.name === 'Account') {
-              iconName = 'person-sharp';
-            }
-            return <Icon name={iconName} size={size} color={color} />;
-          },
-        })}
-        tabBarOptions={{
-          activeTintColor: COLORS.PRIMARY_COLOR,
-          inactiveTintColor: 'gray',
-          keyboardHidesTabBar: true,
-          showLabel: false,
-          style: {
-            backgroundColor: 'rgba(30, 30, 30, 1)',
-            height: height / 12,
-            borderTopWidth: 0,
-          },
-        }}>
-        <Tab.Screen name="Home" component={HomeStackScreen} />
-        <Tab.Screen name="Posts" component={BlabbedScreen} />
-        <Tab.Screen name="Account" component={LoginScreen} />
-      </Tab.Navigator>
+      <Stack.Navigator initialRouteName="MainScreen">
+        <Stack.Screen
+          name="MainScreen"
+          component={MainScreen}
+          options={{title: 'Blab for IG', headerShown: false}}
+        />
+        <Stack.Screen
+          name="ViewScreen"
+          component={ViewScreen}
+          options={{title: 'Blab for IG'}}
+        />
+        <Stack.Screen
+          name="ShareScreen"
+          component={ShareScreen}
+          options={{
+            title: 'Share',
+          }}
+        />
+        <Stack.Screen
+          name="LoginScreen"
+          component={LoginScreen}
+          options={{title: 'Instagram', headerShown: false}}
+        />
+        <Stack.Screen
+          name="BlabScreen"
+          component={BlabScreen}
+          options={{title: 'Blab for IG'}}
+        />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 };

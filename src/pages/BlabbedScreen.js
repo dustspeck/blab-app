@@ -1,23 +1,23 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {FlatList} from 'react-native';
+import {FlatList, Alert} from 'react-native';
 import {StyleSheet, Dimensions} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import {removeElements} from '../sharedMethods/DBManager';
 
-import TopbarBranding from '../components/Misc/TopbarBranding';
 import * as COLORS from '../constants/colors';
-import SelectorTick from '../components/Blabbed/SelectorTick';
+import TopbarBranding from '../components/Misc/TopbarBranding';
 import BlabbedPreview from '../components/Blabbed/BlabbedPreview';
-import SearchBox from '../components/Blabbed/SearchBox';
-import {ListHeader, ListFooter} from '../components/Blabbed/ListHeaderFooter';
-import FilterEmpty from '../components/Blabbed/FilterEmpty';
 import FloatingOptions from '../components/Blabbed/FloatingOptions';
+import SelectorTick from '../components/Blabbed/SelectorTick';
+import SearchBox from '../components/Blabbed/SearchBox';
+import FilterEmpty from '../components/Blabbed/FilterEmpty';
+import {ListHeader, ListFooter} from '../components/Blabbed/ListHeaderFooter';
 
 const {width, height} = Dimensions.get('window');
 
 const BlabbedScreen = ({navigation}) => {
-  const [data, setData] = useState();
+  const [data, setData] = useState([]);
   const [showTop, setShowTop] = useState(true);
   const [isSelection, setIsSelection] = useState(false);
   const [selected, setSelected] = useState([]);
@@ -55,8 +55,20 @@ const BlabbedScreen = ({navigation}) => {
   };
 
   const handleDelete = async () => {
-    setData(await removeElements(selected));
-    setSelected([]);
+    Alert.alert(
+      'Confirm',
+      'Are you sure you want to delete the selected items?',
+      [
+        {
+          text: 'Yes',
+          onPress: async () => {
+            setData(await removeElements(selected));
+            setSelected([]);
+          },
+        },
+        {text: 'No'},
+      ],
+    );
   };
 
   const handleToTop = () => {

@@ -142,7 +142,7 @@ const UrlInputCard = ({navigation, isKeyboardShown}) => {
                 style={Styles.touchButton}>
                 <TouchableOpacity
                   disabled={!input_valid}
-                  style={{width: 50, height: 50}}
+                  style={{width: width / 8, height: width / 8}}
                   activeOpacity={0.8}
                   onPress={handleSubmit}>
                   <Icon
