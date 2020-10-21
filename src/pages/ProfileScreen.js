@@ -2,6 +2,7 @@ import React, {useEffect, useState, useRef} from 'react';
 import {View, Text, Image, Dimensions, TouchableOpacity} from 'react-native';
 import WebView from 'react-native-webview';
 import AsyncStorage from '@react-native-community/async-storage';
+import CookieManager from 'react-native-cookies';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import admob, {
@@ -13,17 +14,18 @@ import admob, {
 import {InterstitialAd, AdEventType} from '@react-native-firebase/admob';
 
 import TopbarBranding from '../components/Misc/TopbarBranding';
+import ThemedMenu from '../components/Profile/OptionsMenu';
 
 import {Scripts} from '../constants/scripts';
 import * as COLORS from '../constants/colors';
+import * as ADS from '../constants/adunits';
 
 import verified_badge from '../../public/assets/img/vbadge.png';
 import private_badge from '../../public/assets/img/pbadge.png';
 
 const showInterstitialAd = () => {
-  const interstitialAd = InterstitialAd.createForAdRequest(
-    TestIds.INTERSTITIAL,
-  );
+  // TestIds.INTERSTITIAL,
+  const interstitialAd = InterstitialAd.createForAdRequest(ADS.Interstitial);
   interstitialAd.onAdEvent((type, error) => {
     if (type === AdEventType.LOADED) {
       interstitialAd.show();
@@ -36,14 +38,16 @@ const {width, height} = Dimensions.get('window');
 
 const ProfileScreen = ({navigation}) => {
   const LoginWebView = useRef();
-  const [loggedin, setLoggedin] = useState(true);
+  const [loggedin, setLoggedin] = useState(false);
   const [user_details, setUserDetails] = useState({});
+  const [options_visible, setOptionsVisible] = useState(false);
 
   const initializeConstants = async () => {
     try {
       let history = await AsyncStorage.getItem('user_data');
       history = JSON.parse(history);
       setUserDetails(history);
+      if (history.username) setLoggedin(true);
     } catch (error) {
       console.log(error);
     }
@@ -53,12 +57,30 @@ const ProfileScreen = ({navigation}) => {
     data = JSON.parse(data);
     if (data.success == true) {
       setUserDetails({...data.user_data});
+      setLoggedin(true);
       AsyncStorage.setItem('user_data', JSON.stringify(data.user_data));
     } else {
       setUserDetails({username: null});
       setLoggedin(false);
       AsyncStorage.setItem('user_data', JSON.stringify(data.user_data));
     }
+  };
+
+  const onLogout = async () => {
+    LoginWebView.current.clearCache(true);
+    const cc = await CookieManager.clearAll();
+    console.log('CookieManager.clearAll =>', cc);
+    setUserDetails({
+      username: null,
+      pp_url: null,
+      follwers_count: null,
+      following_count: null,
+      user_id: null,
+      is_private: null,
+      is_verified: null,
+    });
+    LoginWebView.current.reload();
+    setLoggedin(false);
   };
 
   useEffect(() => {
@@ -96,6 +118,11 @@ const ProfileScreen = ({navigation}) => {
           }}
         />
       </View>
+      <ThemedMenu
+        visible={options_visible}
+        setVisible={setOptionsVisible}
+        onLogout={onLogout}
+      />
       <TopbarBranding />
       <View style={{backgroundColor: COLORS.GRAY_15, flex: 1}}>
         <View style={{flex: 3}}>
@@ -135,7 +162,7 @@ const ProfileScreen = ({navigation}) => {
                       source={private_badge}
                     />
                   )}
-                  {!user_details.is_verified && (
+                  {user_details.is_verified && (
                     <Image
                       style={{
                         height: width / 20,
@@ -216,6 +243,7 @@ const ProfileScreen = ({navigation}) => {
               style={{marginHorizontal: width / 6}}
               onPress={() => {
                 showInterstitialAd();
+                setOptionsVisible(true);
               }}>
               <View
                 style={{

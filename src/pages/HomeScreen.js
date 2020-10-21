@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import * as RNFS from 'react-native-fs';
 import WebView from 'react-native-webview';
-import CookieManager from 'react-native-cookies';
 import ShareMenu from 'react-native-share-menu';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -189,23 +188,6 @@ const HomeScreen = ({navigation, shared_data, route}) => {
       AsyncStorage.setItem('user_data', JSON.stringify(data.user_data));
     }
     setLoading(false);
-  };
-
-  onLogout = async () => {
-    LoginWebView.current.clearCache(true);
-    const cc = await CookieManager.clearAll();
-    console.log('CookieManager.clearAll =>', cc);
-    setUserDetails({
-      username: null,
-      pp_url: null,
-      follwers_count: null,
-      following_count: null,
-      user_id: null,
-      is_private: null,
-      is_verified: null,
-    });
-    AsyncStorage.setItem('user_data', JSON.stringify(data.user_data));
-    LoginWebView.current.reload();
   };
 
   const _keyboardDidShow = () => {
