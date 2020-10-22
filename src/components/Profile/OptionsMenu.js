@@ -39,7 +39,13 @@ const ThemedMenu = (props) => {
               }}>
               Account Settings
             </Text>
-            <TouchableOpacity style={{marginVertical: 5}} activeOpacity={0.8}>
+            <TouchableOpacity
+              style={{marginVertical: 5}}
+              activeOpacity={0.8}
+              onPress={() => {
+                props.setVisible(false);
+                props.navigation.navigate('LoginScreen');
+              }}>
               <Text
                 style={{
                   color: '#eee',
@@ -47,16 +53,6 @@ const ThemedMenu = (props) => {
                   marginVertical: 10,
                 }}>
                 Open Session
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={{marginVertical: 5}} activeOpacity={0.8}>
-              <Text
-                style={{
-                  color: '#eee',
-                  fontSize: width / 20,
-                  marginVertical: 10,
-                }}>
-                Refresh Session
               </Text>
             </TouchableOpacity>
             <TouchableOpacity

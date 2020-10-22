@@ -14,7 +14,7 @@ import admob, {
 import {InterstitialAd, AdEventType} from '@react-native-firebase/admob';
 
 import TopbarBranding from '../components/Misc/TopbarBranding';
-import ThemedMenu from '../components/Profile/OptionsMenu';
+import OptionsMenu from '../components/Profile/OptionsMenu';
 
 import {Scripts} from '../constants/scripts';
 import * as COLORS from '../constants/colors';
@@ -25,7 +25,10 @@ import private_badge from '../../public/assets/img/pbadge.png';
 
 const showInterstitialAd = () => {
   // TestIds.INTERSTITIAL,
-  const interstitialAd = InterstitialAd.createForAdRequest(ADS.Interstitial);
+  // const interstitialAd = InterstitialAd.createForAdRequest(ADS.Interstitial);
+  const interstitialAd = InterstitialAd.createForAdRequest(
+    TestIds.INTERSTITIAL,
+  );
   interstitialAd.onAdEvent((type, error) => {
     if (type === AdEventType.LOADED) {
       interstitialAd.show();
@@ -118,10 +121,11 @@ const ProfileScreen = ({navigation}) => {
           }}
         />
       </View>
-      <ThemedMenu
+      <OptionsMenu
         visible={options_visible}
         setVisible={setOptionsVisible}
         onLogout={onLogout}
+        navigation={navigation}
       />
       <TopbarBranding />
       <View style={{backgroundColor: COLORS.GRAY_15, flex: 1}}>
@@ -242,7 +246,7 @@ const ProfileScreen = ({navigation}) => {
               activeOpacity={0.8}
               style={{marginHorizontal: width / 6}}
               onPress={() => {
-                showInterstitialAd();
+                // showInterstitialAd();
                 setOptionsVisible(true);
               }}>
               <View
@@ -282,7 +286,7 @@ const ProfileScreen = ({navigation}) => {
               activeOpacity={0.8}
               style={{marginHorizontal: width / 6}}
               onPress={() => {
-                showInterstitialAd();
+                // showInterstitialAd();
                 navigation.navigate('LoginScreen');
               }}>
               <View

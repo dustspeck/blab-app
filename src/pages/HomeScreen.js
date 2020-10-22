@@ -17,7 +17,6 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import {Scripts} from '../constants/scripts';
-import WelcomePage from '../components/Welcome/WelcomePage';
 import AskPermissions from '../components/Home/AskPermissions';
 import ThemedModal from '../components/Misc/ThemedModal';
 import UrlInputCard from '../components/Home/UrlInputCard';
@@ -30,6 +29,7 @@ import {validateURL, extractURL} from '../sharedMethods/URLInspector';
 import LoginStatus from '../components/Home/LoginStatus';
 import TopbarBranding from '../components/Misc/TopbarBranding';
 import BlabbedCard from '../components/Home/BlabbedCard';
+import LearnMoreCard from '../components/Home/LearnMoreCard';
 
 const HomeScreen = ({navigation, shared_data, route}) => {
   //constants
@@ -52,7 +52,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     is_verified: null,
   });
   const [blabbed_history, setBlabbedHistory] = useState([]);
-  const [last_perm, setLastPerm] = useState(true);
+  const [last_perm, setLastPerm] = useState(false);
   const [nointernet_modal, setNoInternetModal] = useState(false);
   const [modal_data, setModalData] = useState({
     visible: false,
@@ -131,6 +131,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
           'db_blabbed_history',
           JSON.stringify(empty_data),
         );
+        navigation.navigate('WelcomeScreen');
       }
     } catch (e) {
       console.log(e);
@@ -237,9 +238,9 @@ const HomeScreen = ({navigation, shared_data, route}) => {
 
   return (
     <>
-      {isFirstRun && (
+      {/* {isFirstRun && (
         <WelcomePage isFirstRun={isFirstRun} setIsFirstRun={setIsFirstRun} />
-      )}
+      )} */}
       <ThemedModal
         visible={modal_data.visible}
         heading={modal_data.heading}
@@ -267,23 +268,30 @@ const HomeScreen = ({navigation, shared_data, route}) => {
             }}
           />
         </View>
-        <TopbarBranding />
+        <TopbarBranding navigation={navigation} />
         <LoginStatus
           loading={loading}
           user_details={user_details}
           navigation={navigation}
         />
-        <View style={{backgroundColor: '#151515', flex: 1}}>
-          <UrlInputCard
-            navigation={navigation}
-            isKeyboardShown={is_keyboard_shown}
-          />
-          <BlabbedCard
-            data={blabbed_history}
-            setData={handleSetData}
-            navigation={navigation}
-          />
-        </View>
+        {has_permission || last_perm ? (
+          <View style={{backgroundColor: COLORS.GRAY_15, flex: 1}}>
+            <UrlInputCard
+              navigation={navigation}
+              isKeyboardShown={is_keyboard_shown}
+            />
+            <BlabbedCard
+              data={blabbed_history}
+              setData={handleSetData}
+              navigation={navigation}
+            />
+            {blabbed_history.length < 2 ? (
+              <LearnMoreCard navigation={navigation} />
+            ) : null}
+          </View>
+        ) : (
+          <AskPermissions onSuccess={onSuccess} />
+        )}
       </ScrollView>
     </>
   );

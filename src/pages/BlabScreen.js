@@ -127,7 +127,11 @@ const ViewScreen = ({route, navigation}) => {
           <Video
             source={{uri: mediaUrl}}
             resizeMode="contain"
-            style={{flex: 1, width: null, height: null}}
+            style={{
+              flex: 1,
+              width,
+              height: (width / post_data.width) * post_data.height,
+            }}
             controls={true}
           />
         );

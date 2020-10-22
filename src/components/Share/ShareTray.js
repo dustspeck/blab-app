@@ -96,20 +96,22 @@ const ShareTray = ({
                           disabled={loading}
                           activeOpacity={0.8}
                           onPress={onShare}>
-                          <View
-                            style={{
-                              ...Styles.roundButton,
-                              borderColor: COLORS.PRIMARY_COLOR,
-                              borderWidth: 3,
-                            }}>
+                          <LinearGradient
+                            start={{x: 0.0, y: 0.0}}
+                            end={{x: 1.0, y: 1.0}}
+                            colors={[
+                              COLORS.PRIMARY_COLOR,
+                              COLORS.SECONDARY_COLOR,
+                            ]}
+                            style={Styles.roundButton}>
                             <Icon
                               style={{
                                 ...Styles.iconStyle,
-                                color: COLORS.PRIMARY_COLOR,
+                                color: 'white',
                               }}
-                              name="link-outline"
+                              name="link-sharp"
                             />
-                          </View>
+                          </LinearGradient>
                         </TouchableOpacity>
                         <TouchableOpacity
                           disabled={loading}
@@ -118,20 +120,22 @@ const ShareTray = ({
                             Clipboard.setString(blab_url);
                             ToastAndroid.show('Copied', ToastAndroid.SHORT);
                           }}>
-                          <View
-                            style={{
-                              ...Styles.roundButton,
-                              borderColor: COLORS.PRIMARY_COLOR,
-                              borderWidth: 3,
-                            }}>
+                          <LinearGradient
+                            start={{x: 0.0, y: 0.0}}
+                            end={{x: 1.0, y: 1.0}}
+                            colors={[
+                              COLORS.PRIMARY_COLOR,
+                              COLORS.SECONDARY_COLOR,
+                            ]}
+                            style={Styles.roundButton}>
                             <Icon
                               style={{
                                 ...Styles.iconStyle,
-                                color: COLORS.PRIMARY_COLOR,
+                                color: 'white',
                               }}
-                              name="copy-outline"
+                              name="copy"
                             />
-                          </View>
+                          </LinearGradient>
                         </TouchableOpacity>
                       </View>
                     )}

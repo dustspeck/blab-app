@@ -16,13 +16,13 @@ const LoginStatus = ({
   const [loggedin, setLoggedin] = useState(false);
 
   useEffect(() => {
-    // if (!loading) {
-    if (user_details.username) {
-      setLoggedin(true);
-    } else {
-      setLoggedin(false);
+    if (user_details) {
+      if (user_details.username) {
+        setLoggedin(true);
+      } else {
+        setLoggedin(false);
+      }
     }
-    // }
   });
   return (
     <>
@@ -89,7 +89,7 @@ const LoginStatus = ({
                       textAlignVertical: 'center',
                       color: COLORS.PRIMARY_COLOR,
                     }}>
-                    {!loggedin && (
+                    {!loggedin && !loading && (
                       <>
                         <Icon
                           style={{fontSize: 14, color: COLORS.PRIMARY_COLOR}}

@@ -13,6 +13,7 @@ import LoginScreen from './src/pages/LoginScreen';
 import ViewScreen from './src/pages/ViewScreen';
 import BlabScreen from './src/pages/BlabScreen';
 import ProfileScreen from './src/pages/ProfileScreen';
+import WelcomeScreen from './src/pages/WelcomeScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -72,7 +73,12 @@ const App: () => React$Node = ({navigation}) => {
         <Stack.Screen
           name="MainScreen"
           component={MainScreen}
-          options={{title: 'Blab for IG', headerShown: false}}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="WelcomeScreen"
+          component={WelcomeScreen}
+          options={{headerShown: false}}
         />
         <Stack.Screen
           name="ViewScreen"
