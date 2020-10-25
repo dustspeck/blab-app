@@ -88,11 +88,12 @@ const UrlInputCard = ({navigation, isKeyboardShown}) => {
           padding: 15,
           backgroundColor: COLORS.GRAY_15,
         }}>
-        <View
+        <LinearGradient
+          colors={[COLORS.GRAY_25, COLORS.GRAY_20]}
           style={{
             padding: 15,
             paddingTop: 8,
-            backgroundColor: COLORS.GRAY_25,
+            // backgroundColor: COLORS.GRAY_25,
             borderRadius: 20,
             overflow: 'hidden',
           }}>
@@ -160,7 +161,7 @@ const UrlInputCard = ({navigation, isKeyboardShown}) => {
               </LinearGradient>
             )}
           </View>
-        </View>
+        </LinearGradient>
       </View>
     </>
   );

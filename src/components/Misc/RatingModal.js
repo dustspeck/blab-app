@@ -18,13 +18,12 @@ import {hasRated} from '../../sharedMethods/DBManager';
 
 const {width, height} = Dimensions.get('window');
 
-const RatingModal = () => {
-  const [showMenu, setShowMenu] = useState(true);
+const RatingModal = ({showMenu, setShowMenu}) => {
   const [star, setStar] = useState(5);
 
   const handleSubmitReview = async () => {
+    await hasRated(true);
     if (star > 3) {
-      await hasRated(true);
       Linking.canOpenURL('https://play.google.com').then((supperted) => {
         if (supperted) {
           Linking.openURL(

@@ -26,12 +26,15 @@ import * as PATHS from '../constants/paths';
 import * as MODALS from '../constants/modals';
 
 import {validateURL, extractURL} from '../sharedMethods/URLInspector';
+import {hasRated} from '../sharedMethods/DBManager';
 
 import LoginStatus from '../components/Home/LoginStatus';
 import TopbarBranding from '../components/Misc/TopbarBranding';
 import BlabbedCard from '../components/Home/BlabbedCard';
 import LearnMoreCard from '../components/Home/LearnMoreCard';
 import ShowRatingModal from '../components/Misc/ShowRatingModal';
+import RatingModal from '../components/Misc/RatingModal';
+import RateUsCard from '../components/Home/RateUsCard';
 
 const HomeScreen = ({navigation, shared_data, route}) => {
   //constants
@@ -62,6 +65,8 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     text: null,
     buttons: [],
   });
+  const [has_rated, setHasRated] = useState(true);
+  const [show_rateus_modal, setShowRateUsModal] = useState(false);
   const [is_keyboard_shown, setIsKeyboardShown] = useState(false);
 
   //constants
@@ -161,6 +166,8 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     } catch (e) {
       console.log(e);
     }
+
+    setHasRated(await hasRated());
   };
 
   const onSuccess = (result) => {
@@ -218,6 +225,12 @@ const HomeScreen = ({navigation, shared_data, route}) => {
         buttons={modal_data.buttons}
       />
       <ShowRatingModal />
+      {show_rateus_modal && (
+        <RatingModal
+          showMenu={show_rateus_modal}
+          setShowMenu={setShowRateUsModal}
+        />
+      )}
       <ScrollView
         stickyHeaderIndices={[1]}
         removeClippedSubviews={false}
@@ -253,6 +266,9 @@ const HomeScreen = ({navigation, shared_data, route}) => {
             {blabbed_history.length < 2 ? (
               <LearnMoreCard navigation={navigation} />
             ) : null}
+            {!has_rated && (
+              <RateUsCard setShowRateUsModal={setShowRateUsModal} />
+            )}
           </View>
         ) : (
           <AskPermissions onSuccess={onSuccess} />

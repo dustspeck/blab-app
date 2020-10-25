@@ -1,5 +1,12 @@
 import React, {useEffect, useState, useRef} from 'react';
-import {View, Text, Image, Dimensions, TouchableOpacity} from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
 import WebView from 'react-native-webview';
 import AsyncStorage from '@react-native-community/async-storage';
 import CookieManager from 'react-native-cookies';
@@ -12,6 +19,7 @@ import admob, {
   BannerAdSize,
 } from '@react-native-firebase/admob';
 import {InterstitialAd, AdEventType} from '@react-native-firebase/admob';
+import {RewardedAd, RewardedAdEventType} from '@react-native-firebase/admob';
 
 import TopbarBranding from '../components/Misc/TopbarBranding';
 import OptionsMenu from '../components/Profile/OptionsMenu';
@@ -23,17 +31,42 @@ import * as ADS from '../constants/adunits';
 import verified_badge from '../../public/assets/img/vbadge.png';
 import private_badge from '../../public/assets/img/pbadge.png';
 
-// const interstitialAd = InterstitialAd.createForAdRequest(
-//   TestIds.INTERSTITIAL,
-// );
 const showInterstitialAd = () => {
-  const interstitialAd = InterstitialAd.createForAdRequest(ADS.Interstitial);
+  const interstitialAd = InterstitialAd.createForAdRequest(
+    TestIds.INTERSTITIAL,
+  );
+  // const interstitialAd = InterstitialAd.createForAdRequest(ADS.Interstitial);
   interstitialAd.onAdEvent((type, error) => {
     if (type === AdEventType.LOADED) {
       interstitialAd.show();
     }
   });
   interstitialAd.load();
+};
+
+const showRewardAd = () => {
+  // Create a new instance
+  const rewardAd = RewardedAd.createForAdRequest(TestIds.REWARDED);
+
+  // Add event handlers
+  rewardAd.onAdEvent((type, error) => {
+    if (type === RewardedAdEventType.LOADED) {
+      rewardAd.show();
+    }
+
+    if (type === RewardedAdEventType.EARNED_REWARD) {
+      console.log('User earned reward of 5 lives');
+      Alert.alert(
+        'Reward Ad',
+        'You just earned a reward of 5 lives',
+        [{text: 'OK', onPress: () => console.log('OK Pressed')}],
+        {cancelable: true},
+      );
+    }
+  });
+
+  // Load a new advert
+  rewardAd.load();
 };
 
 const {width, height} = Dimensions.get('window');
@@ -286,6 +319,7 @@ const ProfileScreen = ({navigation}) => {
               style={{marginHorizontal: width / 6}}
               onPress={() => {
                 // showInterstitialAd();
+                showRewardAd();
                 navigation.navigate('LoginScreen');
               }}>
               <View

@@ -7,7 +7,7 @@ import {startupCounter, hasRated} from '../../sharedMethods/DBManager';
 import RatingModal from './RatingModal';
 
 const ShowRatingModal = () => {
-  const [askRating, setAskRating] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   const shouldShowRatingModal = async () => {
     let has_rated = await hasRated();
@@ -17,14 +17,20 @@ const ShowRatingModal = () => {
         startup_count >= Constants.SHOW_RATING_AFTER_INITIAL_COUNT &&
         startup_count % Constants.SHOW_RATING_AFTER_EACH_COUNT === 0
       )
-        setAskRating(true);
+        setShowMenu(true);
     }
   };
 
   useEffect(() => {
     shouldShowRatingModal();
   }, []);
-  return <>{askRating && <RatingModal />}</>;
+  return (
+    <>
+      {showMenu && (
+        <RatingModal showMenu={showMenu} setShowMenu={setShowMenu} />
+      )}
+    </>
+  );
 };
 
 export default ShowRatingModal;
