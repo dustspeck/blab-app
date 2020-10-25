@@ -137,7 +137,7 @@ const Step2Page = ({navigation}) => {
             can be sent to anyone on the internet.
           </Text>
         </View>
-        <View style={Styles.subHeading}>
+        {/* <View style={Styles.subHeading}>
           <Text
             style={{
               color: COLORS.PRIMARY_COLOR,
@@ -147,10 +147,10 @@ const Step2Page = ({navigation}) => {
             }}>
             https://blabforig.com/p/XXXXXXXX
           </Text>
-        </View>
-        <View style={Styles.subHeading}>
+        </View> */}
+        {/* <View style={Styles.subHeading}>
           <Icon
-            name="alert-circle"
+            name="information-circle"
             style={{
               ...Styles.subHeadingIcon,
               fontSize: width / 14,
@@ -165,6 +165,51 @@ const Step2Page = ({navigation}) => {
             }}>
             You will need to be logged in the Profile section in this app to be
             able to share private posts.
+          </Text>
+        </View> */}
+        {/* <View style={Styles.subHeading}>
+          <Icon
+            name="alert-circle"
+            style={{
+              ...Styles.subHeadingIcon,
+              fontSize: width / 14,
+              color: COLORS.DIS_PRIMARY_COLOR,
+            }}
+          />
+          <Text
+            style={{
+              width: width / 1.45,
+              fontSize: width / 24,
+              color: COLORS.DIS_PRIMARY_COLOR,
+            }}>
+            By using this app you agree that you have read our{' '}
+            <Text
+              style={{
+                color: COLORS.PRIMARY_COLOR,
+                textDecorationLine: 'underline',
+              }}>
+              Privacy Policy and Disclaimer
+            </Text>
+            .
+          </Text>
+        </View> */}
+        <View style={Styles.subHeading}>
+          <Text
+            style={{
+              color: COLORS.DIS_PRIMARY_COLOR,
+              width: null,
+              fontSize: width / 22,
+              paddingHorizontal: 20,
+            }}>
+            By using this app you agree that you have read our{' '}
+            <Text
+              style={{
+                color: COLORS.PRIMARY_COLOR,
+                textDecorationLine: 'underline',
+              }}>
+              Privacy Policy and Disclaimer
+            </Text>
+            .
           </Text>
         </View>
         <View style={{height: width / 3}}></View>

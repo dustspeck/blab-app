@@ -11,6 +11,7 @@ import BlabbedPreview from '../components/Blabbed/BlabbedPreview';
 import FloatingOptions from '../components/Blabbed/FloatingOptions';
 import SelectorTick from '../components/Blabbed/SelectorTick';
 import SearchBox from '../components/Blabbed/SearchBox';
+import NoBlabs from '../components/Blabbed/NoBlabs';
 import FilterEmpty from '../components/Blabbed/FilterEmpty';
 import {ListHeader, ListFooter} from '../components/Blabbed/ListHeaderFooter';
 
@@ -81,7 +82,7 @@ const BlabbedScreen = ({navigation}) => {
 
   return (
     <>
-      <TopbarBranding />
+      <TopbarBranding navigation={navigation} />
       <FloatingOptions
         data={data}
         isSelection={isSelection}
@@ -93,14 +94,14 @@ const BlabbedScreen = ({navigation}) => {
         handleDelete={handleDelete}
         handleToTop={handleToTop}
       />
-      <SearchBox handleFilter={handleFilter} />
+      <SearchBox handleFilter={handleFilter} filterText={filterText} />
       <FlatList
         ref={FlatListRef}
         style={Styles.blabbedGrid}
         numColumns={3}
         keyExtractor={(item) => item.id}
         data={isFilter ? filterData : data}
-        ListEmptyComponent={<FilterEmpty />}
+        ListEmptyComponent={isFilter ? <FilterEmpty /> : <NoBlabs />}
         ListHeaderComponent={<ListHeader />}
         ListFooterComponent={<ListFooter />}
         renderItem={({item}) => (

@@ -24,12 +24,14 @@ import UrlInputCard from '../components/Home/UrlInputCard';
 import * as COLORS from '../constants/colors';
 import * as PATHS from '../constants/paths';
 import * as MODALS from '../constants/modals';
+
 import {validateURL, extractURL} from '../sharedMethods/URLInspector';
 
 import LoginStatus from '../components/Home/LoginStatus';
 import TopbarBranding from '../components/Misc/TopbarBranding';
 import BlabbedCard from '../components/Home/BlabbedCard';
 import LearnMoreCard from '../components/Home/LearnMoreCard';
+import ShowRatingModal from '../components/Misc/ShowRatingModal';
 
 const HomeScreen = ({navigation, shared_data, route}) => {
   //constants
@@ -60,7 +62,6 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     text: null,
     buttons: [],
   });
-  const [isWVLoading, setIsWVLoading] = useState(false);
   const [is_keyboard_shown, setIsKeyboardShown] = useState(false);
 
   //constants
@@ -81,6 +82,28 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     } catch (err) {
       console.log(err);
     }
+  };
+
+  const displayError = () => {
+    setModalData({
+      ...MODALS.InvalidURL,
+      buttons: [
+        {
+          text: 'OK',
+          action: () => {
+            setModalData({visible: false});
+          },
+        },
+      ],
+    });
+  };
+
+  const initialShareGetter = () => {
+    ShareMenu.getSharedText((text) => {
+      var valid_url = validateURL(extractURL(text));
+      if (valid_url !== false) navigation.navigate('ShareScreen', {valid_url});
+      else displayError();
+    });
   };
 
   const initialURLGetter = async () => {
@@ -108,22 +131,12 @@ const HomeScreen = ({navigation, shared_data, route}) => {
 
   //db
   const connectData = async () => {
-    console.log(route);
+    LoginWebView.current.reload();
     try {
-      if (route.params.load) {
-        LoginWebView.current.reload();
-        console.log('=============== RELOAD: ' + route.params.load);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-    try {
-      let data = await AsyncStorage.getItem('db_blabbed_history');
-      console.log('DB: ' + data);
-      if (data) {
-        let history = await AsyncStorage.getItem('db_blabbed_history');
-        history = JSON.parse(history);
-        setBlabbedHistory(history.data);
+      let db_data = await AsyncStorage.getItem('db_blabbed_history');
+      if (db_data) {
+        db_data = JSON.parse(db_data);
+        setBlabbedHistory(db_data.data);
       } else {
         setIsFirstRun(true);
         let empty_data = {data: []};
@@ -138,12 +151,10 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     }
 
     try {
-      let data = await AsyncStorage.getItem('user_data');
-      console.log('=============History: ' + data);
-      if (data) {
-        let history = await AsyncStorage.getItem('user_data');
-        history = JSON.parse(history);
-        setUserDetails(history);
+      let db_data = await AsyncStorage.getItem('user_data');
+      if (db_data) {
+        db_data = JSON.parse(db_data);
+        setUserDetails(db_data);
       } else {
         await AsyncStorage.setItem('user_data', JSON.stringify(user_details));
       }
@@ -153,25 +164,9 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   };
 
   const onSuccess = (result) => {
-    console.log('Result:' + result);
-    console.log('hasP:' + has_permission);
     AsyncStorage.setItem('db_perm', `${result}`);
     setLastPerm(result);
     setHasPermission(result);
-  };
-
-  const displayError = () => {
-    setModalData({
-      ...MODALS.InvalidURL,
-      buttons: [
-        {
-          text: 'OK',
-          action: () => {
-            setModalData({visible: false});
-          },
-        },
-      ],
-    });
   };
 
   //data
@@ -181,22 +176,13 @@ const HomeScreen = ({navigation, shared_data, route}) => {
 
   const handleUserData = (data) => {
     data = JSON.parse(data);
-    if (data.success == true) {
-      setUserDetails({...data.user_data});
-      AsyncStorage.setItem('user_data', JSON.stringify(data.user_data));
+    if (data.success) {
+      setUserDetails(data.user_data);
     } else {
       setUserDetails({username: null});
-      AsyncStorage.setItem('user_data', JSON.stringify(data.user_data));
     }
+    AsyncStorage.setItem('user_data', JSON.stringify(data.user_data));
     setLoading(false);
-  };
-
-  const _keyboardDidShow = () => {
-    setIsKeyboardShown(true);
-  };
-
-  const _keyboardDidHide = () => {
-    setIsKeyboardShown(false);
   };
 
   //useeffects
@@ -207,25 +193,12 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   }, []);
 
   useEffect(() => {
-    Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
-    Keyboard.addListener('keyboardDidHide', _keyboardDidHide);
-    return () => {
-      Keyboard.removeListener('keyboardDidShow', _keyboardDidShow);
-      Keyboard.removeListener('keyboardDidHide', _keyboardDidHide);
-    };
-  }, []);
-
-  useEffect(() => {
     const unsubscribe = navigation.addListener('focus', connectData);
     return unsubscribe;
   }, [navigation]);
 
   useEffect(() => {
-    ShareMenu.getSharedText((text) => {
-      var valid_url = validateURL(extractURL(text));
-      if (valid_url !== false) navigation.navigate('ShareScreen', {valid_url});
-      else displayError();
-    });
+    initialShareGetter();
   }, []);
 
   useEffect(() => {
@@ -238,15 +211,13 @@ const HomeScreen = ({navigation, shared_data, route}) => {
 
   return (
     <>
-      {/* {isFirstRun && (
-        <WelcomePage isFirstRun={isFirstRun} setIsFirstRun={setIsFirstRun} />
-      )} */}
       <ThemedModal
         visible={modal_data.visible}
         heading={modal_data.heading}
         text={modal_data.text}
         buttons={modal_data.buttons}
       />
+      <ShowRatingModal />
       <ScrollView
         stickyHeaderIndices={[1]}
         removeClippedSubviews={false}
@@ -259,12 +230,6 @@ const HomeScreen = ({navigation, shared_data, route}) => {
             injectedJavaScript={Scripts.fetchUserDetails__a}
             onMessage={(event) => {
               handleUserData(event.nativeEvent.data);
-            }}
-            onLoadStart={() => {
-              setIsWVLoading(true);
-            }}
-            onLoadEnd={() => {
-              setIsWVLoading(false);
             }}
           />
         </View>
@@ -355,4 +320,21 @@ export default HomeScreen;
 //       // Request config successfully set!
 //       console.log('==============admob set');
 //     });
+// }, []);
+
+// const _keyboardDidShow = () => {
+//   setIsKeyboardShown(true);
+// };
+
+// const _keyboardDidHide = () => {
+//   setIsKeyboardShown(false);
+// };
+
+// useEffect(() => {
+//   Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
+//   Keyboard.addListener('keyboardDidHide', _keyboardDidHide);
+//   return () => {
+//     Keyboard.removeListener('keyboardDidShow', _keyboardDidShow);
+//     Keyboard.removeListener('keyboardDidHide', _keyboardDidHide);
+//   };
 // }, []);

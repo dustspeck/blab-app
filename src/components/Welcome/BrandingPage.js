@@ -45,7 +45,7 @@ const BrandingPage = (props) => {
         <View style={Styles.subHeading}>
           <Icon name="download" style={Styles.subHeadingIcon} />
           <Text style={Styles.subHeadingText}>
-            Download any Instagram Media on your device,
+            Download any Instagram Post on your device,
           </Text>
         </View>
         <View

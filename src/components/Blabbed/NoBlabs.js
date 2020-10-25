@@ -1,8 +1,8 @@
 import React from 'react';
 import {View, Text, Image, Dimensions} from 'react-native';
-import empty_filter from '../../../public/assets/img/empty_filter.png';
+import no_blabs from '../../../public/assets/img/no_blabs.png';
 const {width, height} = Dimensions.get('window');
-const FilterEmoty = () => (
+const NoBlabs = () => (
   <View
     style={{
       justifyContent: 'center',
@@ -11,14 +11,14 @@ const FilterEmoty = () => (
       width: width,
     }}>
     <Image
-      source={empty_filter}
+      source={no_blabs}
       style={{height: width / 2, width: width / 2, opacity: 0.75}}
       resizeMode="center"
     />
     <Text style={{color: 'white', marginTop: width / 20, fontSize: width / 25}}>
-      Oh uh, you've got nothing.
+      Head to Instagram and import posts. {'\n'} Tap on '?' to learn how.
     </Text>
   </View>
 );
 
-export default FilterEmoty;
+export default NoBlabs;

@@ -13,3 +13,9 @@ export const GRAY_35 = '#353535';
 export const GRAY_40 = '#404040';
 export const GRAY_45 = '#454545';
 export const RED_45 = '#450000';
+
+export const RATE_1 = '#d00000';
+export const RATE_2 = '#dc2f02';
+export const RATE_3 = '#e85d04';
+export const RATE_4 = '#f48c06';
+export const RATE_5 = '#ffba08';

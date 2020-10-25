@@ -124,7 +124,7 @@ const Step1Page = (props) => {
         />
         <View style={{...Styles.subHeading, marginTop: width / 10}}>
           <Icon
-            name="alert-circle"
+            name="information-circle"
             style={{
               ...Styles.subHeadingIcon,
               fontSize: width / 14,

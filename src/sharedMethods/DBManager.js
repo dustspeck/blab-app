@@ -33,3 +33,35 @@ exports.removeElements = async (items) => {
     console.log(err);
   }
 };
+
+exports.startupCounter = async () => {
+  try {
+    let new_data = {value: 1};
+    let previous_data = await AsyncStorage.getItem('startup_count');
+    if (previous_data) {
+      previous_data = JSON.parse(previous_data);
+      let previous_value = previous_data.value;
+      new_data = {value: previous_value + 1};
+    }
+    await AsyncStorage.setItem('startup_count', JSON.stringify(new_data));
+    return new_data.value;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+exports.hasRated = async (done = false) => {
+  try {
+    let has_rated = done;
+    let db_hasrated = await AsyncStorage.getItem('has_rated');
+    if (JSON.parse(db_hasrated) && !has_rated) {
+      has_rated = db_hasrated;
+    } else {
+      await AsyncStorage.setItem('has_rated', JSON.stringify(has_rated));
+    }
+    return has_rated;
+  } catch (error) {
+    return null;
+  }
+};

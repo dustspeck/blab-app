@@ -23,12 +23,11 @@ import * as ADS from '../constants/adunits';
 import verified_badge from '../../public/assets/img/vbadge.png';
 import private_badge from '../../public/assets/img/pbadge.png';
 
+// const interstitialAd = InterstitialAd.createForAdRequest(
+//   TestIds.INTERSTITIAL,
+// );
 const showInterstitialAd = () => {
-  // TestIds.INTERSTITIAL,
-  // const interstitialAd = InterstitialAd.createForAdRequest(ADS.Interstitial);
-  const interstitialAd = InterstitialAd.createForAdRequest(
-    TestIds.INTERSTITIAL,
-  );
+  const interstitialAd = InterstitialAd.createForAdRequest(ADS.Interstitial);
   interstitialAd.onAdEvent((type, error) => {
     if (type === AdEventType.LOADED) {
       interstitialAd.show();
@@ -127,7 +126,7 @@ const ProfileScreen = ({navigation}) => {
         onLogout={onLogout}
         navigation={navigation}
       />
-      <TopbarBranding />
+      <TopbarBranding navigation={navigation} />
       <View style={{backgroundColor: COLORS.GRAY_15, flex: 1}}>
         <View style={{flex: 3}}>
           <View style={{flexDirection: 'row', justifyContent: 'center'}}>
@@ -246,7 +245,7 @@ const ProfileScreen = ({navigation}) => {
               activeOpacity={0.8}
               style={{marginHorizontal: width / 6}}
               onPress={() => {
-                // showInterstitialAd();
+                showInterstitialAd();
                 setOptionsVisible(true);
               }}>
               <View
