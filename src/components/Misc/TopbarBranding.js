@@ -54,7 +54,8 @@ const TopbarBranding = ({navigation}) => {
           <TouchableOpacity
             style={{marginHorizontal: width / 25, marginRight: 0}}
             onPress={() => {
-              setShowMenu(!showMenu);
+              // setShowMenu(!showMenu);
+              Alert.alert('Underdev');
             }}>
             <Icon
               name="settings-sharp"

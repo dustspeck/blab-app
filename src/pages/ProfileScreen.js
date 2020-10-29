@@ -46,7 +46,8 @@ const showInterstitialAd = () => {
 
 const showRewardAd = () => {
   // Create a new instance
-  const rewardAd = RewardedAd.createForAdRequest(TestIds.REWARDED);
+  const rewardAd = RewardedAd.createForAdRequest(ADS.Reward);
+  // const rewardAd = RewardedAd.createForAdRequest(TestIds.REWARDED);
 
   // Add event handlers
   rewardAd.onAdEvent((type, error) => {
@@ -278,7 +279,7 @@ const ProfileScreen = ({navigation}) => {
               activeOpacity={0.8}
               style={{marginHorizontal: width / 6}}
               onPress={() => {
-                showInterstitialAd();
+                // showInterstitialAd();
                 setOptionsVisible(true);
               }}>
               <View
@@ -319,7 +320,7 @@ const ProfileScreen = ({navigation}) => {
               style={{marginHorizontal: width / 6}}
               onPress={() => {
                 // showInterstitialAd();
-                showRewardAd();
+                // showRewardAd();
                 navigation.navigate('LoginScreen');
               }}>
               <View

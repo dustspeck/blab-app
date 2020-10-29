@@ -44,7 +44,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   const LoginWebView = useRef();
 
   //states
-  const [has_permission, setHasPermission] = useState(false);
+  const [has_permission, setHasPermission] = useState(true);
   const [isFirstRun, setIsFirstRun] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user_details, setUserDetails] = useState({
@@ -58,7 +58,6 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   });
   const [blabbed_history, setBlabbedHistory] = useState([]);
   const [last_perm, setLastPerm] = useState(false);
-  const [nointernet_modal, setNoInternetModal] = useState(false);
   const [modal_data, setModalData] = useState({
     visible: false,
     heading: null,

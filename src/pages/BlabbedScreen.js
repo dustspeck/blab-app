@@ -48,6 +48,7 @@ const BlabbedScreen = ({navigation}) => {
   };
 
   const handleFilter = (filter) => {
+    filter = filter.toString().toLowerCase();
     setFilterText(filter);
     if (filter) {
       setIsFilter(true);
@@ -79,6 +80,11 @@ const BlabbedScreen = ({navigation}) => {
   useEffect(() => {
     connectData();
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', connectData);
+    return unsubscribe;
+  }, [navigation]);
 
   return (
     <>

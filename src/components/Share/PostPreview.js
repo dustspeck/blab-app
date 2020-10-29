@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {useState, useRef} from 'react';
 import {
   Text,
   View,
@@ -21,53 +21,59 @@ import admob, {
   BannerAdSize,
 } from '@react-native-firebase/admob';
 
+import * as PATHS from '../../constants/paths';
+
 const lock_logo = require('../../../public/assets/img/lock.jpg');
 const lock_d_logo = require('../../../public/assets/img/lock_d.jpg');
 
-export class PostPreview extends Component {
-  state = {
-    img_uri: null,
-    sizeF: 0.3,
-    dark: false,
-    brand: true,
-    toggle_load: false,
-    is_cached: false,
-  };
-  abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
+const PostPreview = (props) => {
+  const viewShot = useRef();
+  const [img_uri, setImgUri] = useState(null);
+  const [sizeF, setSizeF] = useState(0.3);
+  const [dark, setDark] = useState(false);
+  const [brand, setBrand] = useState(true);
+  const [toggle_load, setToggleLoad] = useState(true);
+  const [is_cached, setIsCached] = useState(false);
+  // const abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
+  // const abs_ext_path = PATHS.ExternalDir;
 
-  onImageLoad = () => {
-    if (!this.state.is_cached && this.props.cache) {
-      this.cacheMedia();
+  const onImageLoad = () => {
+    console.log('Image Loaded');
+    if (!is_cached && props.cache) {
+      console.log('Cache Called');
+      cacheMedia();
     }
-    this.setState({toggle_load: true});
-    console.log('Data:' + JSON.stringify(this.props.post_data));
+    setToggleLoad(true);
+    console.log('Set load true');
+    console.log('Data:' + JSON.stringify(props.post_data));
     //resize acc to layout
-    let factor = this.props.post_data.height / this.props.post_data.width;
+    let factor = props.post_data.height / props.post_data.width;
     if (factor > 1.2) {
-      this.setState({sizeF: 0.27});
+      setSizeF(0.27);
     } else if (factor < 0.9) {
-      this.setState({sizeF: 0.33});
+      setSizeF(0.33);
     }
 
     //take viewshot after 500ms and save
     try {
       setTimeout(() => {
         try {
-          this.refs.viewShot
+          viewShot.current
             .capture({result: 'data-uri', format: 'jpeg'})
             .then((uri) => {
-              this.setState({img_uri: uri});
+              console.log('got URI');
+              setImgUri(uri);
 
+              console.log('Moving file');
               //move from cache to ext stg
-              RNFS.moveFile(
-                this.state.img_uri,
-                this.abs_ext_path + '.cache/' + 'sticker.png',
-              )
+              // RNFS.moveFile(img_uri, PATHS.ExternalCacheDir + 'sticker.png')
+              RNFS.moveFile(uri, PATHS.ExternalCacheDir + 'sticker.png')
                 .then((success) => {
                   console.log('done move');
-                  this.setState({toggle_load: false});
+                  props.doneMoveSetter();
+                  setToggleLoad(false);
                 })
-                .catch((err) => console.log(err));
+                .catch((err) => console.log('=============AT 1: ' + err));
             });
         } catch (err) {
           console.log(err);
@@ -78,35 +84,34 @@ export class PostPreview extends Component {
     }
   };
 
-  cacheMedia = () => {
-    let ext =
-      this.props.post_data.img_url.indexOf('.jpg') > -1 ? '.jpg' : '.mp4';
+  const cacheMedia = () => {
+    let ext = props.post_data.img_url.indexOf('.jpg') > -1 ? '.jpg' : '.mp4';
     RNFetchBlob.config({
       path:
-        this.abs_ext_path +
-        `/.cache/${this.getPostIdentifier(this.props.post_data.post_url)}` +
+        PATHS.ExternalCacheDir +
+        `${getPostIdentifier(props.post_data.post_url)}` +
         ext,
       fileCache: true,
     })
-      .fetch('GET', this.props.post_data.img_url, {
+      .fetch('GET', props.post_data.img_url, {
         //headers
       })
       .progress((received, total) => {
         console.log('caching progress', received / total);
       })
       .then(async (res) => {
-        this.setState({is_cached: true});
+        setIsCached(true);
         //add data
         let pre = await AsyncStorage.getItem('db_blabbed_history');
         pre = JSON.parse(pre);
         pre.data.unshift({
           id: Math.floor(Math.random() * 1000000),
           thumbnail:
-            this.abs_ext_path +
-            `.cache/${this.getPostIdentifier(this.props.post_data.post_url)}` +
+            PATHS.ExternalCacheDir +
+            `${getPostIdentifier(props.post_data.post_url)}` +
             ext,
-          post_url: this.props.post_data.post_url,
-          username: this.props.post_data.username,
+          post_url: props.post_data.post_url,
+          username: props.post_data.username,
         });
         await AsyncStorage.setItem('db_blabbed_history', JSON.stringify(pre));
         //
@@ -119,7 +124,7 @@ export class PostPreview extends Component {
       .catch((err) => console.log(err));
   };
 
-  formatNum = (num) => {
+  const formatNum = (num) => {
     num = parseInt(num);
     if (num < 999) return num;
     // if (num < 9999) return `${parseInt(num / 1000)},${num % 1000}`;
@@ -130,31 +135,31 @@ export class PostPreview extends Component {
     return '1T+';
   };
 
-  formatLnC = (l, c) => {
+  const formatLnC = (l, c) => {
     l = parseInt(l);
     c = parseInt(c);
     if (l == 1 && c == 1) {
       return `1 like • 1 comment`;
     } else {
-      if (l == 1) return `1 like • ${this.formatNum(c)} comments`;
-      else if (c == 1) return `${this.formatNum(l)} likes • 1 comment`;
-      else return `${this.formatNum(l)} likes • ${this.formatNum(c)} comments`;
+      if (l == 1) return `1 like • ${formatNum(c)} comments`;
+      else if (c == 1) return `${formatNum(l)} likes • 1 comment`;
+      else return `${formatNum(l)} likes • ${formatNum(c)} comments`;
     }
   };
 
-  formatVnC = (v, c) => {
+  const formatVnC = (v, c) => {
     v = parseInt(v);
     c = parseInt(c);
     if (v == 1 && c == 1) {
       return `1 view • 1 comment`;
     } else {
-      if (v == 1) return `1 view • ${this.formatNum(c)} comments`;
-      else if (v == 1) return `${this.formatNum(v)} views • 1 comment`;
-      else return `${this.formatNum(v)} views • ${this.formatNum(c)} comments`;
+      if (v == 1) return `1 view • ${formatNum(c)} comments`;
+      else if (v == 1) return `${formatNum(v)} views • 1 comment`;
+      else return `${formatNum(v)} views • ${formatNum(c)} comments`;
     }
   };
 
-  getPostIdentifier = (post_url) => {
+  const getPostIdentifier = (post_url) => {
     console.log('post_url' + post_url);
     var pid = post_url.substr(post_url.indexOf('/p/') + 3);
     pid = pid.indexOf('/') > -1 ? pid.substr(0, pid.indexOf('/')) : pid;
@@ -162,194 +167,184 @@ export class PostPreview extends Component {
     return pid;
   };
 
-  render() {
-    // console.log('Data:' + JSON.stringify(this.props.post_data));
-    if (this.props.loading) {
-      return (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color="#fff" />
-        </View>
-      );
-    } else {
-      return (
-        <>
-          {/* <View width={'100%'} height={50} backgroundColor="red">
+  // render() {
+  if (props.loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#fff" />
+      </View>
+    );
+  } else {
+    return (
+      <>
+        {/* <View width={'100%'} height={50} backgroundColor="red">
             <BannerAd
               size={BannerAdSize.SMART_BANNER}
               unitId={TestIds.BANNER}
             />
           </View> */}
-          <View
+        <View
+          style={{
+            position: 'absolute',
+            bottom: '30%',
+            right: 0,
+            zIndex: 10,
+            height: 50,
+            width: 50,
+          }}>
+          <TouchableOpacity
+            disabled={toggle_load}
+            onPress={() => {
+              setDark(!dark);
+              onImageLoad();
+            }}
             style={{
-              position: 'absolute',
-              bottom: '30%',
-              right: 0,
-              zIndex: 10,
-              height: 50,
-              width: 50,
-            }}>
-            <TouchableOpacity
-              disabled={this.state.toggle_load}
-              onPress={() => {
-                this.setState(this.state.dark ? {dark: false} : {dark: true});
-                this.onImageLoad();
-              }}
+              flex: 1,
+              backgroundColor: dark ? '#ffffff' : '#252525',
+              borderTopLeftRadius: 30,
+              borderBottomLeftRadius: 30,
+              elevation: 20,
+            }}
+            activeOpacity={0.5}>
+            <Icon
+              name={
+                toggle_load
+                  ? 'time-outline'
+                  : dark
+                  ? 'sunny-outline'
+                  : 'moon-outline'
+              }
               style={{
                 flex: 1,
-                backgroundColor: this.state.dark ? '#ffffff' : '#252525',
-                borderTopLeftRadius: 30,
-                borderBottomLeftRadius: 30,
-                elevation: 20,
+                fontSize: 25,
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                textAlignVertical: 'center',
+                color: dark ? '#252525' : 'white',
               }}
-              activeOpacity={0.5}>
-              <Icon
-                name={
-                  this.state.toggle_load
-                    ? 'time-outline'
-                    : this.state.dark
-                    ? 'sunny-outline'
-                    : 'moon-outline'
-                }
-                style={{
-                  flex: 1,
-                  fontSize: 25,
-                  marginLeft: 'auto',
-                  marginRight: 'auto',
-                  textAlignVertical: 'center',
-                  color: this.state.dark ? '#252525' : 'white',
-                }}
-              />
-            </TouchableOpacity>
-          </View>
-          <View
+            />
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{
+            position: 'absolute',
+            bottom: '45%',
+            right: 0,
+            zIndex: 10,
+            height: 50,
+            width: 50,
+          }}>
+          <TouchableOpacity
+            disabled={toggle_load}
+            onPress={() => {
+              setBrand(!brand);
+              onImageLoad();
+            }}
             style={{
-              position: 'absolute',
-              bottom: '45%',
-              right: 0,
-              zIndex: 10,
-              height: 50,
-              width: 50,
-            }}>
-            <TouchableOpacity
-              disabled={this.state.toggle_load}
-              onPress={() => {
-                this.setState(
-                  this.state.brand ? {brand: false} : {brand: true},
-                );
-                this.onImageLoad();
-              }}
+              flex: 1,
+              backgroundColor: dark ? '#ffffff' : '#252525',
+              borderTopLeftRadius: 30,
+              borderBottomLeftRadius: 30,
+              elevation: 20,
+            }}
+            activeOpacity={0.5}>
+            <Icon
+              name={toggle_load ? 'time-outline' : 'pricetag-outline'}
               style={{
                 flex: 1,
-                backgroundColor: this.state.dark ? '#ffffff' : '#252525',
-                borderTopLeftRadius: 30,
-                borderBottomLeftRadius: 30,
-                elevation: 20,
+                fontSize: 25,
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                textAlignVertical: 'center',
+                color: dark ? '#252525' : 'white',
               }}
-              activeOpacity={0.5}>
-              <Icon
-                name={
-                  this.state.toggle_load ? 'time-outline' : 'pricetag-outline'
-                }
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.VSBorder}>
+          <ScrollView
+            contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}>
+            <ViewShot
+              ref={viewShot}
+              style={{
+                ...styles.card,
+                backgroundColor: dark ? '#252525' : 'white',
+              }}>
+              <Image style={styles.pp} source={{uri: props.post_data.pp_url}} />
+
+              <Text
                 style={{
-                  flex: 1,
-                  fontSize: 25,
-                  marginLeft: 'auto',
-                  marginRight: 'auto',
-                  textAlignVertical: 'center',
-                  color: this.state.dark ? '#252525' : 'white',
-                }}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.VSBorder}>
-            <ScrollView
-              contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}
-              showsHorizontalScrollIndicator={false}
-              showsVerticalScrollIndicator={false}>
-              <ViewShot
-                ref="viewShot"
-                style={{
-                  ...styles.card,
-                  backgroundColor: this.state.dark ? '#252525' : 'white',
+                  ...styles.username,
+                  color: dark ? 'white' : 'black',
                 }}>
+                {props.post_data.username.toString().length > 16
+                  ? props.post_data.username.toString().substring(0, 16) + '...'
+                  : props.post_data.username}
+              </Text>
+
+              {props.post_data.is_private && (
                 <Image
-                  style={styles.pp}
-                  source={{uri: this.props.post_data.pp_url}}
+                  style={styles.privateLock}
+                  source={dark ? lock_d_logo : lock_logo}
                 />
+              )}
 
-                <Text
-                  style={{
-                    ...styles.username,
-                    color: this.state.dark ? 'white' : 'black',
-                  }}>
-                  {this.props.post_data.username.toString().length > 16
-                    ? this.props.post_data.username
-                        .toString()
-                        .substring(0, 16) + '...'
-                    : this.props.post_data.username}
-                </Text>
+              <Image
+                style={{
+                  height: props.post_data.height * sizeF,
+                  width: props.post_data.width * sizeF,
+                  resizeMode: 'contain',
+                  marginTop: 45,
+                }}
+                source={{
+                  uri: props.post_data.img_url
+                    ? props.post_data.img_url
+                    : 'data:',
+                }}
+                onLoad={onImageLoad}
+              />
 
-                {this.props.post_data.is_private && (
-                  <Image
-                    style={styles.privateLock}
-                    source={this.state.dark ? lock_d_logo : lock_logo}
-                  />
-                )}
+              <Text
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  margin: 5,
+                  marginLeft: 10,
+                  fontSize: 14,
+                  color: dark ? 'white' : 'black',
+                }}>
+                {props.post_data.video_view_count
+                  ? formatVnC(
+                      props.post_data.video_view_count,
+                      props.post_data.comments_count,
+                    )
+                  : formatLnC(
+                      props.post_data.likes_count,
+                      props.post_data.comments_count,
+                    )}
+              </Text>
 
-                <Image
-                  style={{
-                    height: this.props.post_data.height * this.state.sizeF,
-                    width: this.props.post_data.width * this.state.sizeF,
-                    resizeMode: 'contain',
-                    marginTop: 45,
-                  }}
-                  source={{
-                    uri: this.props.post_data.img_url
-                      ? this.props.post_data.img_url
-                      : 'data:',
-                  }}
-                  onLoad={this.onImageLoad}
-                />
-
-                <Text
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    margin: 5,
-                    marginLeft: 10,
-                    fontSize: 14,
-                    color: this.state.dark ? 'white' : 'black',
-                  }}>
-                  {this.props.post_data.video_view_count
-                    ? this.formatVnC(
-                        this.props.post_data.video_view_count,
-                        this.props.post_data.comments_count,
-                      )
-                    : this.formatLnC(
-                        this.props.post_data.likes_count,
-                        this.props.post_data.comments_count,
-                      )}
-                </Text>
-
-                <Text
-                  style={{
-                    margin: 2,
-                    marginTop: 10,
-                    marginHorizontal: 10,
-                    textAlign: 'right',
-                    fontSize: 12,
-                    color: this.state.dark ? 'white' : 'black',
-                  }}>
-                  {this.state.brand && 'Blab for IG'}
-                </Text>
-              </ViewShot>
-            </ScrollView>
-          </View>
-        </>
-      );
-    }
+              <Text
+                style={{
+                  margin: 2,
+                  marginTop: 10,
+                  marginHorizontal: 10,
+                  textAlign: 'right',
+                  fontSize: 12,
+                  color: dark ? 'white' : 'black',
+                }}>
+                {brand && 'Blab for IG'}
+              </Text>
+            </ViewShot>
+          </ScrollView>
+        </View>
+      </>
+    );
   }
-}
+};
+// }
 
 const styles = StyleSheet.create({
   card: {

@@ -1,5 +1,5 @@
 import React, {Component, useEffect, useState, useCallback} from 'react';
-import {Linking, AppRegistry, Dimensions} from 'react-native';
+import {Linking, AppRegistry, Dimensions, StatusBar} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -69,6 +69,7 @@ const MainScreen = ({navigation}) => {
 const App: () => React$Node = ({navigation}) => {
   return (
     <NavigationContainer>
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.GRAY_15} />
       <Stack.Navigator initialRouteName="MainScreen">
         <Stack.Screen
           name="MainScreen"

@@ -43,6 +43,7 @@ const ShareScreen = ({route, navigation}) => {
   const [blab_url, setBlabUrl] = useState('https://blabforig.com/');
 
   const [loading, setLoading] = useState(true);
+  const [done_move, setDoneMove] = useState(false);
 
   const [is_share_loading, setIsShareLoading] = useState(false);
   const [is_shared, setIsShared] = useState(false);
@@ -106,6 +107,7 @@ const ShareScreen = ({route, navigation}) => {
                   text: 'OK',
                   action: () => {
                     setModalData({visible: false});
+                    navigation.navigate('HomeScreen');
                   },
                 },
               ],
@@ -113,18 +115,23 @@ const ShareScreen = ({route, navigation}) => {
           }
         }
       })
-      .catch((err) =>
+      .catch((err) => {
         setModalData({
           visible: true,
           heading: 'Error Occured',
           text:
             'Could not connect to the server. Check your internet connection and try again.',
-          action: () => {
-            setModalData({visible: false});
-            navigation.navigate('HomeScreen');
-          },
-        }),
-      );
+          buttons: [
+            {
+              text: 'OK',
+              action: () => {
+                setModalData({visible: false});
+                navigation.navigate('HomeScreen');
+              },
+            },
+          ],
+        });
+      });
   };
 
   const downloadMedia = () => {
@@ -413,6 +420,10 @@ const ShareScreen = ({route, navigation}) => {
     }
   };
 
+  const doneMoveSetter = () => {
+    setDoneMove(true);
+  };
+
   return (
     <>
       <View style={{flex: 0}}>
@@ -446,13 +457,19 @@ const ShareScreen = ({route, navigation}) => {
 
       <View style={{flex: 5}}>
         <View style={{flex: 1, backgroundColor: '#454545'}}>
-          <PostPreview loading={loading} post_data={data} cache={true} />
+          <PostPreview
+            loading={loading}
+            post_data={data}
+            cache={true}
+            doneMoveSetter={doneMoveSetter}
+          />
         </View>
       </View>
 
       <View style={{flex: 2, backgroundColor: 'black'}}>
         <ShareTray
           loading={loading}
+          done_move={done_move}
           data={data}
           blab_url={blab_url}
           is_share_loading={is_share_loading}

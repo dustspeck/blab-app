@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {StyleSheet, ToastAndroid} from 'react-native';
 import {View, Button, Text, TouchableOpacity} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
@@ -9,6 +9,7 @@ import * as COLORS from '../../constants/colors';
 
 const ShareTray = ({
   loading,
+  done_move,
   data,
   is_share_loading,
   blab_url,
@@ -23,6 +24,10 @@ const ShareTray = ({
   onStory,
   onRepost,
 }) => {
+  useEffect(() => {
+    console.log('done move:' + done_move);
+    console.log('loading:' + loading);
+  }, []);
   return (
     <>
       <View style={{flex: 1, margin: 10}}>
@@ -175,7 +180,8 @@ const ShareTray = ({
                     }}>
                     <TouchableOpacity
                       activeOpacity={0.8}
-                      disabled={loading}
+                      // disabled={loading}
+                      disabled={loading || !done_move}
                       onPress={onShareImg}>
                       <View style={Styles.roundButton}>
                         <Icon style={Styles.iconStyle} name="image-outline" />

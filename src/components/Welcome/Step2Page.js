@@ -7,6 +7,7 @@ import {
   Image,
   StyleSheet,
   ScrollView,
+  Linking,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -14,7 +15,10 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import logo from '../../../public/assets/img/logo.png';
 import step4 from '../../../public/assets/img/step4.jpg';
 import step5 from '../../../public/assets/img/step5.jpg';
+
 import * as COLORS from '../../constants/colors';
+import * as PATHS from '../../constants/paths';
+
 const {height, width} = Dimensions.get('window');
 
 const Step2Page = ({navigation}) => {
@@ -197,12 +201,15 @@ const Step2Page = ({navigation}) => {
           <Text
             style={{
               color: COLORS.DIS_PRIMARY_COLOR,
-              width: null,
-              fontSize: width / 22,
+              width: width / 1.1,
+              fontSize: width / 26,
               paddingHorizontal: 20,
             }}>
             By using this app you agree that you have read our{' '}
             <Text
+              onPress={() => {
+                Linking.openURL(PATHS.PolicyAddress);
+              }}
               style={{
                 color: COLORS.PRIMARY_COLOR,
                 textDecorationLine: 'underline',

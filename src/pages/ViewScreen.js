@@ -44,6 +44,7 @@ const ShareScreen = ({route, navigation}) => {
   const [blab_url, setBlabUrl] = useState('https://blabforig.com/');
 
   const [loading, setLoading] = useState(true);
+  const [done_move, setDoneMove] = useState(false);
 
   const [is_share_loading, setIsShareLoading] = useState(false);
   const [is_shared, setIsShared] = useState(false);
@@ -389,6 +390,10 @@ const ShareScreen = ({route, navigation}) => {
     }
   };
 
+  const doneMoveSetter = () => {
+    setDoneMove(true);
+  };
+
   return (
     <>
       <ThemedModal
@@ -409,7 +414,12 @@ const ShareScreen = ({route, navigation}) => {
 
       <View style={{flex: 1}}>
         <View style={{flex: 1, backgroundColor: '#454545'}}>
-          <PostPreview loading={loading} post_data={data} cache={false} />
+          <PostPreview
+            loading={loading}
+            post_data={data}
+            cache={false}
+            doneMoveSetter={doneMoveSetter}
+          />
         </View>
       </View>
 
@@ -419,6 +429,7 @@ const ShareScreen = ({route, navigation}) => {
         <ShareTray
           loading={loading}
           data={data}
+          done_move={done_move}
           blab_url={blab_url}
           is_share_loading={is_share_loading}
           is_shared={is_shared}
