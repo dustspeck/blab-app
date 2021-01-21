@@ -32,6 +32,7 @@ const AskPermissions = ({onSuccess}) => {
   useEffect(() => {
     askPermissions();
   });
+  
   return (
     <View
       style={{

@@ -23,52 +23,16 @@ import {RewardedAd, RewardedAdEventType} from '@react-native-firebase/admob';
 
 import TopbarBranding from '../components/Misc/TopbarBranding';
 import OptionsMenu from '../components/Profile/OptionsMenu';
+import SettingsCard from '../components/Misc/SettingsCard';
 
 import {Scripts} from '../constants/scripts';
+import {ShowInterstitialAd, ShowRewardAd} from '../sharedMethods/AdsProvider';
+import {hasBypassedAdDays} from '../sharedMethods/DBManager';
+
 import * as COLORS from '../constants/colors';
-import * as ADS from '../constants/adunits';
 
 import verified_badge from '../../public/assets/img/vbadge.png';
 import private_badge from '../../public/assets/img/pbadge.png';
-
-const showInterstitialAd = () => {
-  const interstitialAd = InterstitialAd.createForAdRequest(
-    TestIds.INTERSTITIAL,
-  );
-  // const interstitialAd = InterstitialAd.createForAdRequest(ADS.Interstitial);
-  interstitialAd.onAdEvent((type, error) => {
-    if (type === AdEventType.LOADED) {
-      interstitialAd.show();
-    }
-  });
-  interstitialAd.load();
-};
-
-const showRewardAd = () => {
-  // Create a new instance
-  const rewardAd = RewardedAd.createForAdRequest(ADS.Reward);
-  // const rewardAd = RewardedAd.createForAdRequest(TestIds.REWARDED);
-
-  // Add event handlers
-  rewardAd.onAdEvent((type, error) => {
-    if (type === RewardedAdEventType.LOADED) {
-      rewardAd.show();
-    }
-
-    if (type === RewardedAdEventType.EARNED_REWARD) {
-      console.log('User earned reward of 5 lives');
-      Alert.alert(
-        'Reward Ad',
-        'You just earned a reward of 5 lives',
-        [{text: 'OK', onPress: () => console.log('OK Pressed')}],
-        {cancelable: true},
-      );
-    }
-  });
-
-  // Load a new advert
-  rewardAd.load();
-};
 
 const {width, height} = Dimensions.get('window');
 
@@ -77,6 +41,7 @@ const ProfileScreen = ({navigation}) => {
   const [loggedin, setLoggedin] = useState(false);
   const [user_details, setUserDetails] = useState({});
   const [options_visible, setOptionsVisible] = useState(false);
+  const [loading_ad, setLoadingAd] = useState(false);
 
   const initializeConstants = async () => {
     try {
@@ -142,6 +107,28 @@ const ProfileScreen = ({navigation}) => {
     return unsubscribe;
   }, [navigation]);
 
+  const loginscreenAction = async () => {
+    setLoadingAd(true);
+    // ShowRewardAd({
+    //   successAction: () => {
+    //     setLoadingAd(false);
+    //     navigation.navigate('LoginScreen');
+    //   },
+    //   failureAction: () => {
+    //     setLoadingAd(false);
+    //   },
+    // });
+    const enabled_ads = await hasBypassedAdDays();
+    console.log('enabled_ads: ', enabled_ads);
+    ShowInterstitialAd({
+      enabled_ads: enabled_ads,
+      postAction: () => {
+        setLoadingAd(false);
+        navigation.navigate('LoginScreen');
+      },
+    });
+  };
+
   return (
     <>
       <View style={{flex: 0}}>
@@ -161,6 +148,7 @@ const ProfileScreen = ({navigation}) => {
         navigation={navigation}
       />
       <TopbarBranding navigation={navigation} />
+      <SettingsCard />
       <View style={{backgroundColor: COLORS.GRAY_15, flex: 1}}>
         <View style={{flex: 3}}>
           <View style={{flexDirection: 'row', justifyContent: 'center'}}>
@@ -255,10 +243,10 @@ const ProfileScreen = ({navigation}) => {
               {loggedin
                 ? `Hi, ${
                     user_details.username
-                      ? user_details.username.toUpperCase() + ' 👋'
+                      ? user_details.username.toUpperCase() + ' 👋 '
                       : ''
                   }  `
-                : 'NOT CONNECTED'}
+                : 'NOT CONNECTED '}
             </Text>
           </View>
         </View>
@@ -279,7 +267,6 @@ const ProfileScreen = ({navigation}) => {
               activeOpacity={0.8}
               style={{marginHorizontal: width / 6}}
               onPress={() => {
-                // showInterstitialAd();
                 setOptionsVisible(true);
               }}>
               <View
@@ -316,18 +303,14 @@ const ProfileScreen = ({navigation}) => {
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
+              disabled={loading_ad}
               activeOpacity={0.8}
               style={{marginHorizontal: width / 6}}
-              onPress={() => {
-                // showInterstitialAd();
-                // showRewardAd();
-                navigation.navigate('LoginScreen');
-              }}>
+              onPress={loginscreenAction}>
               <View
                 style={{
                   width: width / 1.5,
                   height: width / 8,
-                  // marginHorizontal: width / 6,
                   backgroundColor: COLORS.PRIMARY_COLOR,
                   borderRadius: width / 50,
                 }}>
@@ -344,7 +327,7 @@ const ProfileScreen = ({navigation}) => {
                     marginBottom: 'auto',
                   }}>
                   <Icon
-                    name="logo-instagram"
+                    name={loading_ad ? 'time-outline' : 'logo-instagram'}
                     style={{
                       fontSize: width / 16,
                       textAlignVertical: 'center',
@@ -378,31 +361,10 @@ const ProfileScreen = ({navigation}) => {
                   marginTop: 'auto',
                   marginBottom: 'auto',
                 }}>
-                {/* <Icon
-                  name="bulb-sharp"
-                  style={{
-                    fontSize: width / 25,
-                    textAlignVertical: 'center',
-                    marginTop: 'auto',
-                    marginBottom: 'auto',
-                  }}
-                /> */}
                 {'💡  Learn how it works'}
               </Text>
             </View>
           </TouchableOpacity>
-          {/* <View
-            style={{
-              width: '100%',
-              height: 120,
-              backgroundColor: COLORS.GRAY_15,
-              marginTop: 25,
-            }}>
-            <BannerAd
-              size={BannerAdSize.SMART_BANNER}
-              unitId={TestIds.BANNER}
-            />
-          </View> */}
         </View>
       </View>
     </>

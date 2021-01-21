@@ -5,7 +5,15 @@ import LinearGradient from 'react-native-linear-gradient';
 import * as COLORS from '../../constants/colors';
 const {height, width} = Dimensions.get('window');
 
-const CTACard = ({navigation, icon, text, action}) => {
+const CTACard = ({
+  navigation,
+  disabled,
+  icon,
+  color,
+  text,
+  subText,
+  action,
+}) => {
   return (
     <View
       style={{
@@ -14,7 +22,10 @@ const CTACard = ({navigation, icon, text, action}) => {
         padding: 15,
         backgroundColor: COLORS.GRAY_15,
       }}>
-      <TouchableOpacity activeOpacity={0.8} onPress={action}>
+      <TouchableOpacity
+        disabled={disabled}
+        activeOpacity={0.8}
+        onPress={action}>
         <View
           style={{
             backgroundColor: COLORS.GRAY_25,
@@ -26,11 +37,6 @@ const CTACard = ({navigation, icon, text, action}) => {
           <LinearGradient
             pointerEvents="none"
             colors={[COLORS.GRAY_25, COLORS.GRAY_20]}
-            // colors={[
-            //   COLORS.PRIMARY_COLOR,
-            //   COLORS.SECONDARY_COLOR,
-            //   COLORS.PRIMARY_COLOR,
-            // ]}
             start={{x: 0.0, y: 0.5}}
             end={{x: 1, y: 1}}
             style={{
@@ -66,7 +72,7 @@ const CTACard = ({navigation, icon, text, action}) => {
                   fontSize: width / 30,
                   color: '#aaa',
                 }}>
-                {text}
+                {subText}
               </Text>
             </View>
           </View>

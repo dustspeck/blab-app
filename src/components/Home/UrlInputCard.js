@@ -9,7 +9,13 @@ import {
   Pressable,
   FlatList,
 } from 'react-native';
-import {Linking, Alert, StyleSheet, Dimensions} from 'react-native';
+import {
+  Linking,
+  PermissionsAndroid,
+  Alert,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -33,8 +39,35 @@ const UrlInputCard = ({navigation, isKeyboardShown}) => {
     }
   };
 
-  const handleSubmit = () => {
-    if (input_valid) {
+  const askPermissions = async () => {
+    try {
+      let check = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      );
+      if (!check) {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        );
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log(true);
+          return true;
+        } else {
+          console.log(false);
+          return false;
+        }
+      } else {
+        console.log(true);
+        return true;
+      }
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  };
+
+  const handleSubmit = async () => {
+    let perm = await askPermissions();
+    if (input_valid && perm) {
       var valid_url = validateURL(post_url);
       if (valid_url !== false) {
         navigation.navigate('ShareScreen', {valid_url});

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ToastAndroid,
   ScrollView,
+  PermissionsAndroid,
 } from 'react-native';
 import ViewShot from 'react-native-view-shot';
 import * as RNFS from 'react-native-fs';
@@ -20,6 +21,9 @@ import admob, {
   TestIds,
   BannerAdSize,
 } from '@react-native-firebase/admob';
+
+import {ShowInterstitialAd} from '../../sharedMethods/AdsProvider';
+import {hasBypassedAdDays} from '../../sharedMethods/DBManager';
 
 import * as PATHS from '../../constants/paths';
 
@@ -37,7 +41,7 @@ const PostPreview = (props) => {
   // const abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
   // const abs_ext_path = PATHS.ExternalDir;
 
-  const onImageLoad = () => {
+  const imageLoadAction = () => {
     console.log('Image Loaded');
     if (!is_cached && props.cache) {
       console.log('Cache Called');
@@ -84,6 +88,31 @@ const PostPreview = (props) => {
     }
   };
 
+  const onImageLoad = async () => {
+    try {
+      let check = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      );
+      if (!check) {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        );
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          // onSuccess(true);
+          imageLoadAction();
+        } else {
+          // onSuccess(false);
+          console.log('==========Not Allowed');
+        }
+      } else {
+        // onSuccess(true);
+        imageLoadAction();
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const cacheMedia = () => {
     let ext = props.post_data.img_url.indexOf('.jpg') > -1 ? '.jpg' : '.mp4';
     RNFetchBlob.config({
@@ -122,6 +151,23 @@ const PostPreview = (props) => {
         // );
       })
       .catch((err) => console.log(err));
+  };
+
+  const onRemoveTag = async () => {
+    setToggleLoad(true);
+    if (brand) {
+      const enabled_ads = await hasBypassedAdDays();
+      ShowInterstitialAd({
+        enabled_ads: enabled_ads,
+        postAction: () => {
+          setBrand(!brand);
+          onImageLoad();
+        },
+      });
+    } else {
+      setBrand(!brand);
+      onImageLoad();
+    }
   };
 
   const formatNum = (num) => {
@@ -236,10 +282,7 @@ const PostPreview = (props) => {
           }}>
           <TouchableOpacity
             disabled={toggle_load}
-            onPress={() => {
-              setBrand(!brand);
-              onImageLoad();
-            }}
+            onPress={onRemoveTag}
             style={{
               flex: 1,
               backgroundColor: dark ? '#ffffff' : '#252525',
@@ -303,7 +346,10 @@ const PostPreview = (props) => {
                     ? props.post_data.img_url
                     : 'data:',
                 }}
-                onLoad={onImageLoad}
+                onLoad={() => {
+                  console.log('Image loaded');
+                  onImageLoad();
+                }}
               />
 
               <Text

@@ -26,7 +26,7 @@ import * as PATHS from '../constants/paths';
 import * as MODALS from '../constants/modals';
 
 import {validateURL, extractURL} from '../sharedMethods/URLInspector';
-import {hasRated} from '../sharedMethods/DBManager';
+import {hasRated, hasBypassedAdDays} from '../sharedMethods/DBManager';
 
 import LoginStatus from '../components/Home/LoginStatus';
 import TopbarBranding from '../components/Misc/TopbarBranding';
@@ -35,6 +35,7 @@ import LearnMoreCard from '../components/Home/LearnMoreCard';
 import ShowRatingModal from '../components/Misc/ShowRatingModal';
 import RatingModal from '../components/Misc/RatingModal';
 import RateUsCard from '../components/Home/RateUsCard';
+import BypassAdsCard from '../components/Home/BypassAdsCard';
 
 const HomeScreen = ({navigation, shared_data, route}) => {
   //constants
@@ -65,6 +66,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     buttons: [],
   });
   const [has_rated, setHasRated] = useState(true);
+  const [has_bypassads, setHasBypassAds] = useState(false);
   const [show_rateus_modal, setShowRateUsModal] = useState(false);
   const [is_keyboard_shown, setIsKeyboardShown] = useState(false);
 
@@ -167,6 +169,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
     }
 
     setHasRated(await hasRated());
+    setHasBypassAds(await hasBypassedAdDays());
   };
 
   const onSuccess = (result) => {
@@ -265,6 +268,15 @@ const HomeScreen = ({navigation, shared_data, route}) => {
             {blabbed_history.length < 2 ? (
               <LearnMoreCard navigation={navigation} />
             ) : null}
+
+            <BypassAdsCard
+              setHasBypassAds={setHasBypassAds}
+              has_bypassads={has_bypassads}
+            />
+
+            {/* {!has_bypassads && (
+              <BypassAdsCard setHasBypassAds={setHasBypassAds} />
+            )} */}
             {!has_rated && (
               <RateUsCard setShowRateUsModal={setShowRateUsModal} />
             )}

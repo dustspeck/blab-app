@@ -20,6 +20,9 @@ import PostPreview from '../components/Share/PostPreview';
 import ShareTray from '../components/Share/ShareTray';
 import ThemedModal from '../components/Misc/ThemedModal';
 
+import {ShowInterstitialAd} from '../sharedMethods/AdsProvider';
+import {hasBypassedAdDays} from '../sharedMethods/DBManager';
+
 const ShareScreen = ({route, navigation}) => {
   var mounted = true;
   const abs_ext_path = RNFS.ExternalStorageDirectoryPath + '/Blab/';
@@ -41,6 +44,8 @@ const ShareScreen = ({route, navigation}) => {
     sidecar: [],
   });
   const [blab_url, setBlabUrl] = useState('https://blabforig.com/');
+
+  const [shown_ad, setShownAd] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [done_move, setDoneMove] = useState(false);
@@ -70,6 +75,21 @@ const ShareScreen = ({route, navigation}) => {
       mounted = false;
     };
   }, []);
+
+  const showAd = async () => {
+    if (!shown_ad) {
+      setLoading(true);
+      const enabled_ads = await hasBypassedAdDays();
+      setLoading(true);
+      ShowInterstitialAd({
+        enabled_ads: enabled_ads,
+        postAction: () => {
+          setShownAd(true);
+          setLoading(false);
+        },
+      });
+    }
+  };
 
   const handlePressSUB = () => {
     setIsShareLoading(true);
@@ -412,9 +432,10 @@ const ShareScreen = ({route, navigation}) => {
     fdata = JSON.parse(fdata);
 
     if (fdata.success) {
+      showAd();
       console.log('========================setData');
       setData({...fdata.shared_data});
-      setLoading(false);
+      // setLoading(false);
     } else {
       displayError();
     }

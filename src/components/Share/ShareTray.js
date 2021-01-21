@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, ToastAndroid} from 'react-native';
 import {View, Button, Text, TouchableOpacity} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
