@@ -23,7 +23,7 @@ import {RewardedAd, RewardedAdEventType} from '@react-native-firebase/admob';
 
 import TopbarBranding from '../components/Misc/TopbarBranding';
 import OptionsMenu from '../components/Profile/OptionsMenu';
-import SettingsCard from '../components/Misc/SettingsCard';
+// import SettingsCard from '../components/Misc/SettingsCard';
 
 import {Scripts} from '../constants/scripts';
 import {ShowInterstitialAd, ShowRewardAd} from '../sharedMethods/AdsProvider';
@@ -74,7 +74,7 @@ const ProfileScreen = ({navigation}) => {
     setUserDetails({
       username: null,
       pp_url: null,
-      follwers_count: null,
+      followers_count: null,
       following_count: null,
       user_id: null,
       is_private: null,
@@ -148,7 +148,7 @@ const ProfileScreen = ({navigation}) => {
         navigation={navigation}
       />
       <TopbarBranding navigation={navigation} />
-      <SettingsCard />
+      {/* <SettingsCard /> */}
       <View style={{backgroundColor: COLORS.GRAY_15, flex: 1}}>
         <View style={{flex: 3}}>
           <View style={{flexDirection: 'row', justifyContent: 'center'}}>
@@ -256,12 +256,25 @@ const ProfileScreen = ({navigation}) => {
             style={{
               color: 'white',
               marginHorizontal: width / 10,
-              marginBottom: width / 10,
-              fontSize: width / 23,
+              fontSize: width / 20,
+              fontWeight: 'bold',
+              marginBottom: 10,
+              textAlign: 'center',
             }}>
-            It is a long established fact that a reader will be distracted by
-            the readable content of a page when looking at its layout.
+            Why Connect to Instagram?
           </Text>
+          <Text
+            style={{
+              color: 'white',
+              marginHorizontal: width / 10,
+              marginBottom: width / 6,
+              fontSize: width / 25,
+              textAlign: 'center',
+            }}>
+            Connecting your Instagram account will let you share private posts
+            over Blab.
+          </Text>
+
           {loggedin ? (
             <TouchableOpacity
               activeOpacity={0.8}
@@ -302,45 +315,59 @@ const ProfileScreen = ({navigation}) => {
               </View>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity
-              disabled={loading_ad}
-              activeOpacity={0.8}
-              style={{marginHorizontal: width / 6}}
-              onPress={loginscreenAction}>
-              <View
-                style={{
-                  width: width / 1.5,
-                  height: width / 8,
-                  backgroundColor: COLORS.PRIMARY_COLOR,
-                  borderRadius: width / 50,
-                }}>
-                <Text
+            <>
+              <TouchableOpacity
+                disabled={loading_ad}
+                activeOpacity={0.8}
+                style={{marginHorizontal: width / 6}}
+                onPress={loginscreenAction}>
+                <View
                   style={{
-                    flex: 1,
-                    textAlignVertical: 'center',
-                    textAlign: 'center',
-                    fontSize: width / 22,
-                    color: 'white',
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    marginTop: 'auto',
-                    marginBottom: 'auto',
+                    width: width / 1.5,
+                    height: width / 8,
+                    backgroundColor: COLORS.PRIMARY_COLOR,
+                    borderRadius: width / 50,
                   }}>
-                  <Icon
-                    name={loading_ad ? 'time-outline' : 'logo-instagram'}
+                  <Text
                     style={{
-                      fontSize: width / 16,
+                      flex: 1,
                       textAlignVertical: 'center',
+                      textAlign: 'center',
+                      fontSize: width / 22,
+                      color: 'white',
+                      fontWeight: 'bold',
+                      textAlign: 'center',
                       marginTop: 'auto',
                       marginBottom: 'auto',
-                    }}
-                  />
-                  {'  Connect to Instagram'}
-                </Text>
-              </View>
-            </TouchableOpacity>
+                    }}>
+                    <Icon
+                      name={loading_ad ? 'time-outline' : 'logo-instagram'}
+                      style={{
+                        fontSize: width / 16,
+                        textAlignVertical: 'center',
+                        marginTop: 'auto',
+                        marginBottom: 'auto',
+                      }}
+                    />
+                    {'  Connect to Instagram'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+              <Text
+                style={{
+                  color: COLORS.PRIMARY_COLOR,
+                  marginHorizontal: width / 10,
+                  marginVertical: width / 20,
+                  fontSize: width / 30,
+                  textAlign: 'center',
+                }}>
+                {
+                  "Your account remains secured as you enter your login credentials directly on the Instagram's website.\n"
+                }
+              </Text>
+            </>
           )}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             activeOpacity={0.8}
             style={{marginHorizontal: width / 6, marginTop: 15}}
             onPress={() => {}}>
@@ -364,7 +391,21 @@ const ProfileScreen = ({navigation}) => {
                 {'💡  Learn how it works'}
               </Text>
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
+          {loggedin && (
+            <Text
+              style={{
+                color: COLORS.DIS_PRIMARY_COLOR,
+                fontSize: width / 30,
+                marginHorizontal: width / 10,
+                marginVertical: width / 10,
+                textAlign: 'center',
+                flex: 1,
+              }}>
+              We respect the copyright of the owners. Do not repost or share
+              without the owner's permission.
+            </Text>
+          )}
         </View>
       </View>
     </>

@@ -14,7 +14,7 @@ const LearnMoreCard = ({navigation}) => {
       navigation={navigation}
       icon={'book'}
       text={'VIEW QUICK GUIDE TO BLAB'}
-      subText={'LOREM IPSUM IS JUST RANDOM TEXT'}
+      subText={'Learn how to use Blab to the fullest!'}
       action={() => {
         navigation.navigate('WelcomeScreen');
       }}

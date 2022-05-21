@@ -1,5 +1,20 @@
 {
 	"files.associations": {
 		"SLL1.C": "cpp"
-	}
+	},
+	"cSpell.words": [
+		"RNFS",
+		"instagrammer",
+		"ionicons",
+		"repost"
+	],
+	"cSpell.ignoreWords": [
+		"action",
+		"branding",
+		"loggedin",
+		"loginscreen",
+		"loginscreen action",
+		"topbar",
+		"topbar branding"
+	]
 }

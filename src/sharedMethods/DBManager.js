@@ -74,10 +74,11 @@ exports.hasBypassedAdDays = async (set = null) => {
     if (set === null) {
       let started_date = await AsyncStorage.getItem('has_bypassed_ads');
       let now_date = Date.parse(new Date());
-      return (
-        Math.abs(now_date - started_date) / (1000 * 60 * 60 * 24) <
-        Constants.BYPASS_ADS_FOR_DAYS
-      );
+      // return (
+      //   Math.abs(now_date - started_date) / (1000 * 60 * 60 * 24) <
+      //   Constants.BYPASS_ADS_FOR_DAYS
+      // );
+      return true;
     } else if (set === true) {
       await AsyncStorage.setItem(
         'has_bypassed_ads',

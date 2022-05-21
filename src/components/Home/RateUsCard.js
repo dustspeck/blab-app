@@ -13,7 +13,7 @@ const RateUsCard = ({setShowRateUsModal}) => {
     <CTACard
       icon={'logo-google-playstore'}
       text={'RATE THIS APP ON PLAY'}
-      subText={'LOREM IPSUM IS JUST RANDOM TEXT'}
+      subText={'Tell others what you think about this app'}
       action={() => {
         setShowRateUsModal(true);
       }}

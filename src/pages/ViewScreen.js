@@ -208,7 +208,7 @@ const ShareScreen = ({route, navigation}) => {
       await Share.share({
         title: 'Send Link',
         message: blab_url,
-        excludedActivityTypes: ['com.blab'],
+        excludedActivityTypes: ['com.blabforig'],
       });
     } catch (error) {
       console.log(error);

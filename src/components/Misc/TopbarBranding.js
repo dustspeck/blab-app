@@ -1,7 +1,16 @@
 import React, {useState} from 'react';
-import {View, Text, Alert, TouchableOpacity, Modal} from 'react-native';
+import {
+  View,
+  Text,
+  Alert,
+  TouchableOpacity,
+  Modal,
+  Image,
+  Linking,
+} from 'react-native';
 import {Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import SettingsCard from '../Misc/SettingsCard';
 
 import * as COLORS from '../../constants/colors';
 
@@ -11,8 +20,13 @@ const TopbarBranding = ({navigation}) => {
   return (
     <>
       {showMenu && (
-        <Modal animationType="slide" visible={showMenu} transparent={true}>
+        <Modal
+          animationType="fade"
+          visible={showMenu}
+          transparent={true}
+          statusBarTranslucent={true}>
           <TouchableOpacity
+            activeOpacity={1}
             onPress={() => {
               setShowMenu(!showMenu);
             }}
@@ -21,9 +35,9 @@ const TopbarBranding = ({navigation}) => {
               justifyContent: 'center',
               height: height,
               width: width,
-              backgroundColor: 'blue',
+              backgroundColor: '#00000075',
             }}>
-            <Text>qwe</Text>
+            <SettingsCard />
           </TouchableOpacity>
         </Modal>
       )}
@@ -54,8 +68,8 @@ const TopbarBranding = ({navigation}) => {
           <TouchableOpacity
             style={{marginHorizontal: width / 25, marginRight: 0}}
             onPress={() => {
-              // setShowMenu(!showMenu);
-              Alert.alert('Underdev');
+              setShowMenu(!showMenu);
+              // Alert.alert('Underdev');
             }}>
             <Icon
               name="settings-sharp"

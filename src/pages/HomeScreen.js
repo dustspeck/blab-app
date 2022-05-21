@@ -51,7 +51,7 @@ const HomeScreen = ({navigation, shared_data, route}) => {
   const [user_details, setUserDetails] = useState({
     username: null,
     pp_url: null,
-    follwers_count: null,
+    followers_count: null,
     following_count: null,
     user_id: null,
     is_private: null,

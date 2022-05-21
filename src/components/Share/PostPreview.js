@@ -15,12 +15,6 @@ import * as RNFS from 'react-native-fs';
 import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-community/async-storage';
-import admob, {
-  MaxAdContentRating,
-  BannerAd,
-  TestIds,
-  BannerAdSize,
-} from '@react-native-firebase/admob';
 
 import {ShowInterstitialAd} from '../../sharedMethods/AdsProvider';
 import {hasBypassedAdDays} from '../../sharedMethods/DBManager';

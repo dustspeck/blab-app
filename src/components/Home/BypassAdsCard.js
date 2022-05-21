@@ -47,7 +47,13 @@ const BypassAdsCard = ({setHasBypassAds, has_bypassads}) => {
           ? `REMOVED ADS FOR ${Constants.BYPASS_ADS_FOR_DAYS} DAYS `
           : `REMOVE ADS FOR ${Constants.BYPASS_ADS_FOR_DAYS} DAYS `
       }
-      subText={`LOREM IPSUM IS JUST RANDOM ${seen_ads}/${Constants.BYPASS_ADS_FOR_DAYS}`}
+      subText={
+        has_bypassads
+          ? `All ads are disabled. Cheers.`
+          : `Earn ${
+              Constants.BYPASS_ADS_FOR_DAYS - seen_ads
+            } more points in a row to remove ads`
+      }
       disabled={loading_ad || has_bypassads}
       action={bypassAdAction}
     />

@@ -28,6 +28,8 @@ const ShareTray = ({
     console.log('done move:' + done_move);
     console.log('loading:' + loading);
   }, []);
+
+  const [ads_shown, isAdsShown] = useState(false);
   return (
     <>
       <View style={{flex: 1, margin: 10}}>

@@ -235,7 +235,7 @@ const ShareScreen = ({route, navigation}) => {
       await Share.share({
         title: 'Send Link',
         message: blab_url,
-        excludedActivityTypes: ['com.blab'],
+        excludedActivityTypes: ['com.blabforig'],
       });
     } catch (error) {
       console.log(error);
@@ -303,6 +303,14 @@ const ShareScreen = ({route, navigation}) => {
               social: ShareC.Social.INSTAGRAM_STORIES,
             };
 
+        // const enabled_ads = await hasBypassedAdDays();
+        // ShowInterstitialAd({
+        //   enabled_ads: enabled_ads,
+        //   postAction: async () => {
+        //     console.log('===AD');
+        //     await ShareC.shareSingle(options);
+        //   },
+        // });
         await ShareC.shareSingle(options);
       }
     } catch (error) {

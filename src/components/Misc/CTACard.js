@@ -52,7 +52,7 @@ const CTACard = ({
             <Icon
               name={icon}
               style={{
-                fontSize: width / 14,
+                fontSize: width / 16,
                 color: '#ddd',
                 textAlignVertical: 'center',
                 marginHorizontal: width / 18,
